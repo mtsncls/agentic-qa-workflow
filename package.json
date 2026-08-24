@@ -1,0 +1,43 @@
+{
+  "name": "agentic-qa-workflow",
+  "version": "0.1.0",
+  "description": "Workflow de QA Automation / Agentic Testing: Jira -> Claude (agentes) -> Playwright -> analisis -> acciones en Jira",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "qa": "tsx src/index.ts",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "lint": "eslint . --ext .ts --max-warnings 0",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "format": "prettier --write \"**/*.ts\"",
+    "show-report": "playwright show-report",
+    "allure:serve": "allure generate allure-results -o allure-report --clean && allure open allure-report",
+    "typecheck": "tsc --noEmit"
+  },
+  "bin": {
+    "agentic-qa": "./src/index.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.3.241",
+    "@playwright/test": "^1.62.1",
+    "commander": "^15.0.0",
+    "dotenv": "^17.4.2",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "@typescript-eslint/eslint-plugin": "^8.67.0",
+    "@typescript-eslint/parser": "^8.67.0",
+    "allure-playwright": "^3.10.2",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-playwright": "^2.11.0",
+    "prettier": "^3.9.6",
+    "tsx": "^4.23.12",
+    "typescript": "~5.9.0"
+  }
+}
