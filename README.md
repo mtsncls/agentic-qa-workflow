@@ -145,3 +145,4 @@ opción `mcpServers` del `query()`.
 - El agente Generator corre con `permissionMode: acceptEdits` limitado a
   herramientas de lectura/escritura de archivos; no tiene Bash.
 - Toda respuesta de LLM se valida con zod antes de usarse.
+# agentic-qa-workflow
