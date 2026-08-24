@@ -1,5 +1,19 @@
 # AGENTS.md — Repo and agent conventions
 
+## Language policy (MANDATORY)
+
+All generated content MUST be in English:
+
+- Code comments, docstrings, log messages and error messages.
+- Documentation (README, guides), including content aimed at Jira
+  (bug titles/descriptions, comments) since they are public artifacts.
+- Commit messages (imperative mood, conventional-commits style,
+  e.g. `feat: add retry policy to decision engine`).
+- Test titles and PR descriptions.
+
+Exception: user-provided data (ticket text from Jira) may stay in its original
+language; the Gherkin parser accepts Spanish criteria by design.
+
 This repository runs an **Agentic QA workflow**: Claude Code agents take part
 in real testing decisions (planning, generation, failure analysis) and close
 the loop with **Jira** and **Playwright**.
