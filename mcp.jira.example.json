@@ -1,5 +1,5 @@
 {
-  "_comment": "Ejemplo de servidores MCP para usar Jira/Confluence desde los agentes Claude. Copia a .mcp.json (raíz del repo) o pasa mcpServers en las opciones de query() del SDK.",
+  "_comment": "Example MCP servers for using Jira/Confluence from the Claude agents. Copy to .mcp.json (repo root) or pass mcpServers in the SDK query() options.",
   "mcpServers": {
     "atlassian": {
       "url": "https://mcp.atlassian.com/v1/sse"
@@ -8,7 +8,7 @@
       "command": "npx",
       "args": ["-y", "jira-mcp"],
       "env": {
-        "JIRA_URL": "https://tu-empresa.atlassian.net",
+        "JIRA_URL": "https://your-company.atlassian.net",
         "JIRA_API_TOKEN": "${JIRA_API_TOKEN}"
       }
     }

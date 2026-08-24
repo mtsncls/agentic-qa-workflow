@@ -6,7 +6,7 @@ export class ProductsPage extends HelperPage {
     super(page);
   }
 
-  /** Añade al carrito el producto cuyo data-test es `add-to-cart-<slug>`. */
+  /** Adds to the cart the product whose data-test is `add-to-cart-<slug>`. */
   async addItem(slug: string): Promise<void> {
     await this.page.getByTestId(`add-to-cart-${slug}`).click();
   }

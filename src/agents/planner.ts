@@ -35,42 +35,42 @@ export const testPlanSchema = z.object({
 
 export type TestPlan = z.infer<typeof testPlanSchema>;
 
-const SYSTEM = `Eres un QA Lead agéntico dentro de un pipeline de testing automatizado.
-Tu trabajo: dado un ticket de Jira con criterios de aceptación y el inventario de tests Playwright existentes,
-decidir qué ejecutar para validar el ticket.
-Reglas:
-- Mapea cada criterio a un test existente cuando sea posible (compara intención semántica, no texto literal).
-- Los criterios sin cobertura van con status "missing" y generan una entrada en "generate".
-- "specsToRun" debe contener SOLO rutas relativas de archivos .spec.ts relevantes (tests/e2e/...).
-- Responde ÚNICAMENTE con JSON válido (sin markdown ni explicaciones), con este formato exacto:
-{"ticket":"...","strategy":"...","coverage":[{"criterion":"...","status":"covered|missing","matchedTest":"título del test"}],"specsToRun":["tests/e2e/x.spec.ts"],"generate":[{"file":"tests/e2e/y.spec.ts","title":"...","criterion":"...","rationale":"..."}],"notes":"..."}`;
+const SYSTEM = `You are an agentic QA Lead inside an automated testing pipeline.
+Your job: given a Jira ticket with acceptance criteria and the inventory of existing Playwright tests,
+decide what to run to validate the ticket.
+Rules:
+- Map each criterion to an existing test when possible (compare semantic intent, not literal text).
+- Criteria without coverage go with status "missing" and produce an entry in "generate".
+- "specsToRun" must contain ONLY relative paths of relevant .spec.ts files (tests/e2e/...).
+- Respond with VALID JSON ONLY (no markdown, no explanations), using this exact shape:
+{"ticket":"...","strategy":"...","coverage":[{"criterion":"...","status":"covered|missing","matchedTest":"test title"}],"specsToRun":["tests/e2e/x.spec.ts"],"generate":[{"file":"tests/e2e/y.spec.ts","title":"...","criterion":"...","rationale":"..."}],"notes":"..."}`;
 
 function buildPrompt(
   issueSummary: string,
   criteria: AcceptanceCriterion[],
   inventory: SpecInventoryItem[]
 ): string {
-  const inv = inventory.map((s) => `- ${s.file} :: "${s.title}"`).join("\n") || "(vacío)";
+  const inv = inventory.map((s) => `- ${s.file} :: "${s.title}"`).join("\n") || "(empty)";
   const ac = criteria.map((c) => `${c.index}. ${c.text}`).join("\n");
   return [
     `TICKET: ${issueSummary}`,
     "",
-    "CRITERIOS DE ACEPTACIÓN:",
+    "ACCEPTANCE CRITERIA:",
     ac,
     "",
-    "INVENTARIO DE TESTS PLAYWRIGHT EXISTENTES:",
+    "EXISTING PLAYWRIGHT TEST INVENTORY:",
     inv,
     "",
-    "Genera el plan de testing en JSON.",
+    "Generate the testing plan as JSON.",
   ].join("\n");
 }
 
-/** Planner determinista para DRY_RUN: cubre todo con los specs existentes. */
+/** Deterministic planner for DRY_RUN: covers everything with existing specs. */
 function dryRunPlan(ticket: string, criteria: AcceptanceCriterion[], inventory: SpecInventoryItem[]): TestPlan {
   const files = [...new Set(inventory.map((i) => i.file))];
   return {
     ticket,
-    strategy: "[dry-run] Ejecutar suite E2E existente contra todos los criterios.",
+    strategy: "[dry-run] Run the existing E2E suite against all criteria.",
     coverage: criteria.map((c) => ({
       criterion: c.text,
       status: "covered" as const,
@@ -78,7 +78,7 @@ function dryRunPlan(ticket: string, criteria: AcceptanceCriterion[], inventory: 
     })),
     specsToRun: files,
     generate: [],
-    notes: "Plan generado en modo DRY_RUN (sin LLM).",
+    notes: "Plan generated in DRY_RUN mode (no LLM).",
   };
 }
 

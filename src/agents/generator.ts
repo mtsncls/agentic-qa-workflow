@@ -7,35 +7,35 @@ export interface GeneratedTest {
   title: string;
 }
 
-const SYSTEM = `Eres un SDET senior que escribe pruebas E2E con Playwright + TypeScript.
-Antes de escribir código:
-1. Lee AGENTS.md (convenciones del repo).
-2. Lee 1-2 specs existentes en tests/e2e/ para imitar el estilo.
-Luego crea el archivo .spec.ts solicitado cumpliendo EXACTAMENTE las convenciones.
-No modifiques archivos existentes. No ejecutes comandos.`;
+const SYSTEM = `You are a senior SDET writing E2E tests with Playwright + TypeScript.
+Before writing code:
+1. Read AGENTS.md (repo conventions).
+2. Read 1-2 existing specs under tests/e2e/ to mimic the style.
+Then create the requested .spec.ts file complying EXACTLY with the conventions.
+Do not modify existing files. Do not run commands.`;
 
 /**
- * Agente generador: Claude Code escribe los specs faltantes directamente
- * en el repo usando sus herramientas Write/Edit.
+ * Generator agent: Claude Code writes the missing specs directly
+ * into the repo using its Write/Edit tools.
  */
 export async function generateMissingTests(plan: TestPlan): Promise<GeneratedTest[]> {
   const created: GeneratedTest[] = [];
 
   for (const item of plan.generate) {
     if (!item.file.endsWith(".spec.ts") || item.file.includes("..")) {
-      log.warn("generator", `Ruta sospechosa ignorada: ${item.file}`);
+      log.warn("generator", `Suspicious path ignored: ${item.file}`);
       continue;
     }
 
     const prompt = [
-      `Crea el archivo de test "${item.file}" con un único test titulado exactamente:`,
+      `Create the test file "${item.file}" with a single test titled exactly:`,
       `"${item.title}"`,
       "",
-      "El test debe validar este criterio de aceptación del ticket",
+      "The test must validate this acceptance criterion of ticket",
       `${plan.ticket}:`,
       `"${item.criterion}"`,
       "",
-      "Contexto de estrategia: " + plan.strategy,
+      "Strategy context: " + plan.strategy,
     ].join("\n");
 
     await askClaude(prompt, {
@@ -47,7 +47,7 @@ export async function generateMissingTests(plan: TestPlan): Promise<GeneratedTes
     });
 
     created.push({ file: item.file, title: item.title });
-    log.ok("generator", `Spec generado: ${item.file}`);
+    log.ok("generator", `Spec generated: ${item.file}`);
   }
 
   return created;

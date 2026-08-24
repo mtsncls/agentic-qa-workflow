@@ -52,7 +52,7 @@ export class RestJiraClient implements JiraApi {
 
     if (!res.ok) {
       const text = await res.text().catch(() => "");
-      throw new Error(`Jira ${res.status} ${res.statusText} en ${path}: ${text.slice(0, 400)}`);
+      throw new Error(`Jira ${res.status} ${res.statusText} on ${path}: ${text.slice(0, 400)}`);
     }
     if (res.status === 204) return undefined as T;
     return (await res.json()) as T;

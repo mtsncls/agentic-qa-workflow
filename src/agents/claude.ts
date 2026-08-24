@@ -2,23 +2,23 @@ import { query } from "@anthropic-ai/claude-agent-sdk";
 import { config } from "../config/env";
 
 export interface AskOptions {
-  /** System prompt del rol (planner, analista, generador de tests...). */
+  /** Role system prompt (planner, analyst, test generator...). */
   system?: string;
-  /** Herramientas que el agente puede usar. Vacío = solo conversación. */
+  /** Tools the agent may use. Empty = conversation only. */
   allowedTools?: string[];
-  /** Máximo de vueltas agénticas (uso de herramientas). */
+  /** Maximum agentic turns (tool uses). */
   maxTurns?: number;
   cwd?: string;
   permissionMode?: "default" | "acceptEdits" | "bypassPermissions" | "plan";
 }
 
 /**
- * Wrapper sobre el SDK de Claude Code. Ejecuta un prompt en modo no
- * interactivo y devuelve la respuesta textual final.
+ * Wrapper over the Claude Code SDK. Runs a prompt in non-interactive mode and
+ * returns the final text response.
  */
 export async function askClaude(prompt: string, opts: AskOptions = {}): Promise<string> {
   if (!config.ANTHROPIC_API_KEY && !config.DRY_RUN) {
-    throw new Error("ANTHROPIC_API_KEY no configurada");
+    throw new Error("ANTHROPIC_API_KEY is not configured");
   }
 
   const options = {
@@ -31,7 +31,7 @@ export async function askClaude(prompt: string, opts: AskOptions = {}): Promise<
     permissionMode: opts.permissionMode ?? "default",
   };
 
-  // any deliberado: los tipos SDKMessage varían entre versiones del SDK.
+  // any deliberate: SDKMessage types vary across SDK versions.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const messages: any[] = [];
   const stream = query({ prompt, options } as unknown as Parameters<typeof query>[0]);
@@ -45,11 +45,11 @@ export async function askClaude(prompt: string, opts: AskOptions = {}): Promise<
     | undefined;
 
   if (resultMsg?.is_error) {
-    throw new Error(`Claude terminó con error (${resultMsg.subtype}): ${resultMsg.result ?? ""}`);
+    throw new Error(`Claude ended with an error (${resultMsg.subtype}): ${resultMsg.result ?? ""}`);
   }
   if (resultMsg?.result) return resultMsg.result;
 
-  // Fallback: concatenar bloques de texto de los mensajes assistant.
+  // Fallback: concatenate text blocks from assistant messages.
   const text = messages
     .filter((m) => m?.type === "assistant")
     .flatMap((m) => m.message?.content ?? [])
@@ -58,7 +58,7 @@ export async function askClaude(prompt: string, opts: AskOptions = {}): Promise<
     .join("\n");
 
   if (!text.trim()) {
-    throw new Error("Claude no devolvió contenido textual");
+    throw new Error("Claude returned no textual content");
   }
   return text;
 }

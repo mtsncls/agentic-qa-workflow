@@ -3,7 +3,7 @@ import { expect, test } from "./fixtures";
 const STANDARD_USER = process.env.STANDARD_USER ?? "standard_user";
 const COMMON_PASSWORD = process.env.COMMON_PASSWORD ?? "secret_sauce";
 
-/** Flujo completo de compra: carrito → checkout → confirmación. */
+/** Full purchase flow: cart → checkout → confirmation. */
 test.describe("Checkout", () => {
   test("complete checkout flow shows confirmation", async ({ page, pm }) => {
     await pm.onLoginPage().goto();

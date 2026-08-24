@@ -1,68 +1,68 @@
-# AGENTS.md — Convenciones del repo y de los agentes
+# AGENTS.md — Repo and agent conventions
 
-Este repositorio ejecuta un **workflow de QA Agéntico**: agentes Claude Code
-participan en decisiones reales de testing (planificación, generación, análisis
-de fallas) e integran el ciclo con **Jira** y **Playwright**.
+This repository runs an **Agentic QA workflow**: Claude Code agents take part
+in real testing decisions (planning, generation, failure analysis) and close
+the loop with **Jira** and **Playwright**.
 
-## Arquitectura
+## Architecture
 
 ```
 Jira (ticket + Acceptance Criteria)
         │
         ▼
-┌─────────────────┐     plan de testing      ┌──────────────────┐
+┌─────────────────┐     testing plan         ┌──────────────────┐
 │ Planner (Claude) │ ───────────────────────► │ Playwright Runner │
 └─────────────────┘                          └────────┬─────────┘
-        ▲                     genera specs            │ resultados + evidencia
-        │                      (opcional)             ▼ (screenshots/video/trace)
-┌─────────────────┐   veredicto + confianza   ┌──────────────────┐
+        ▲                     generates specs            │ results + evidence
+        │                      (optional)                ▼ (screenshots/video/trace)
+┌─────────────────┐   verdict + confidence    ┌──────────────────┐
 │ Analyst (Claude) │ ◄─────────────────────── │ Decision Engine   │
 └─────────────────┘                           └────────┬─────────┘
                                                        ▼
-                                    Jira: bug + evidencia / comentarios / transición
+                                    Jira: bug + evidence / comments / transition
 ```
 
-## Roles de los agentes
+## Agent roles
 
-| Agente | Archivo | Herramientas | Responsabilidad |
+| Agent | File | Tools | Responsibility |
 |---|---|---|---|
-| **Planner** | `src/agents/planner.ts` | ninguna (solo razonamiento) | Mapea cada criterio de aceptación del ticket contra el inventario de specs; decide qué ejecutar y qué falta |
-| **Generator** | `src/agents/generator.ts` | Read, Write, Glob, Grep | Escribe los `.spec.ts` faltantes siguiendo las convenciones de este archivo |
-| **Analyst** | `src/agents/analyst.ts` | Read, Glob, Grep | Clasifica cada falla (`product_bug`, `flaky`, `test_issue`, `environment`) leyendo screenshots y código; propone acción |
+| **Planner** | `src/agents/planner.ts` | none (pure reasoning) | Maps each ticket acceptance criterion against the spec inventory; decides what to run and what is missing |
+| **Generator** | `src/agents/generator.ts` | Read, Write, Glob, Grep | Writes missing `.spec.ts` files following the conventions in this file |
+| **Analyst** | `src/agents/analyst.ts` | Read, Glob, Grep | Classifies each failure (`product_bug`, `flaky`, `test_issue`, `environment`) by reading screenshots and code; proposes an action |
 
-El **Decision Engine** (`src/decisions/engine.ts`) combina reglas deterministas
-con el veredicto del analista:
+The **Decision Engine** (`src/decisions/engine.ts`) combines deterministic
+rules with the analyst's verdict:
 
-- `retry` recomendado y `MAX_RETRIES` disponible → reintento automático del test.
-- `product_bug` con `confidence >= BUG_CONFIDENCE_THRESHOLD` → **crea bug en Jira**
-  con screenshot/video/trace adjuntos, lo linkea al ticket y opcionalmente mueve
-  el ticket de estado (`JIRA_TRANSITION_BUG`).
-- Todo pasó → comentario de cierre en Jira (+ transición `JIRA_TRANSITION_PASS`).
-- Casos ambiguos → comentario informativo, sin apertura automática de bugs.
+- `retry` recommended and `MAX_RETRIES` available → automatic test retry.
+- `product_bug` with `confidence >= BUG_CONFIDENCE_THRESHOLD` → **creates a Jira bug**
+  with screenshot/video/trace attached, links it to the ticket and optionally
+  moves the ticket status (`JIRA_TRANSITION_BUG`).
+- Everything passed → closing comment on Jira (+ `JIRA_TRANSITION_PASS`).
+- Ambiguous cases → informative comment, no automatic bug opening.
 
-## Convenciones para tests Playwright
+## Playwright test conventions
 
-1. Ubicación: `tests/e2e/**/*.spec.ts`.
-2. Selectores: usar atributos `data-test="..."` vía `getByTestId()` (configurado
-   en `playwright.config.ts` como `testIdAttribute`). Evitar XPath y clases CSS.
-3. Un `test.describe` por historia/feature; títulos descriptivos que reflejen el
-   criterio de aceptación que validan.
-4. Sin dependencias entre tests; cada test hace su propio login/setup (sin
-   storageState global: el planner necesita ejecutar subsets con `--grep`).
-5. Assertions web-first (`expect(locator).toHaveX()`), nunca `waitForTimeout`.
-6. Interacciones con la UI a través de los Page Objects (`tests/e2e/pages/`);
-   la fixture compartida inyecta el `PageManager` como `pm`
+1. Location: `tests/e2e/**/*.spec.ts`.
+2. Selectors: use `data-test="..."` attributes via `getByTestId()` (configured
+   in `playwright.config.ts` as `testIdAttribute`). Avoid XPath and CSS classes.
+3. One `test.describe` per story/feature; descriptive titles reflecting the
+   acceptance criterion they validate.
+4. No dependencies between tests; each test does its own login/setup (no
+   global storageState: the planner needs to run subsets with `--grep`).
+5. Web-first assertions (`expect(locator).toHaveX()`), never `waitForTimeout`.
+6. UI interactions go through the Page Objects (`tests/e2e/pages/`);
+   the shared fixture injects the `PageManager` as `pm`
    (`import { test, expect } from "./fixtures"`).
-7. Fixtures adicionales van en `tests/e2e/fixtures.ts`.
+7. Additional fixtures go in `tests/e2e/fixtures.ts`.
 
-Los agentes generadores DEBEN leer un spec existente antes de escribir uno nuevo
-para imitar el estilo. Todo código nuevo debe pasar `npm run lint` y
-`npm run typecheck`.
+Generating agents MUST read an existing spec before writing a new one to mimic
+the style. All new code must pass `npm run lint` and `npm run typecheck`.
 
-## Convenciones del pipeline
+## Pipeline conventions
 
-- Los artifacts (reportes JSON, screenshots, videos, traces, manifest) viven en
-  `artifacts/<run-id>/`; nunca se commitean.
-- El planner responde SOLO JSON validado con zod (`src/agents/planner.ts`).
-- Toda acción sobre Jira pasa por `src/jira/client.ts` (REST API v3) o su mock.
-- `MOCK_JIRA=1` y `DRY_RUN=1` permiten probar todo el flujo sin credenciales ni LLM.
+- Artifacts (JSON reports, screenshots, videos, traces, manifest) live in
+  `artifacts/<run-id>/`; they are never committed.
+- The planner responds ONLY with zod-validated JSON (`src/agents/planner.ts`).
+- Every Jira action goes through `src/jira/client.ts` (REST API v3) or its mock.
+- `MOCK_JIRA=1` and `DRY_RUN=1` allow exercising the whole flow without
+  credentials or an LLM.

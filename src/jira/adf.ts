@@ -2,7 +2,7 @@ import type { AdfNode } from "./types";
 
 const BLOCK_TYPES = new Set(["paragraph", "heading", "listItem", "codeBlock", "blockquote"]);
 
-/** Convierte un documento ADF a texto plano legible (para prompts del agente). */
+/** Converts an ADF document to plain readable text (for agent prompts). */
 export function adfToText(doc?: AdfNode | null): string {
   if (!doc) return "";
   const buf: string[] = [];
@@ -17,7 +17,7 @@ export function adfToText(doc?: AdfNode | null): string {
   return buf.join("").replace(/\n{3,}/g, "\n\n").trim();
 }
 
-/** Convierte texto plano a ADF (cada línea = párrafo). Suficiente para comentarios/descripciones. */
+/** Converts plain text to ADF (each line = paragraph). Good enough for comments/descriptions. */
 export function textToAdf(text: string): AdfNode {
   const paragraphs = text
     .split(/\r?\n/)

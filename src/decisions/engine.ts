@@ -24,9 +24,8 @@ export interface EngineContext {
 }
 
 /**
- * Motor de decisiones: combina reglas deterministas con el veredicto del
- * agente analista para decidir y ejecutar acciones (reintento, bug en Jira,
- * comentario o escalado).
+ * Decision engine: combines deterministic rules with the analyst agent's
+ * verdict to decide and execute actions (retry, Jira bug, comment or escalate).
  */
 export async function handleFailures(
   failures: TestResult[],
@@ -37,7 +36,7 @@ export async function handleFailures(
   const bugsCreated: string[] = [];
 
   for (const failure of failures) {
-    log.step("engine", `Analizando falla: "${failure.title}"`);
+    log.step("engine", `Analyzing failure: "${failure.title}"`);
 
     const analysis = await analyzeFailure({
       ticketKey: ctx.ticketKey,
@@ -47,18 +46,18 @@ export async function handleFailures(
 
     log.agent(
       "analyst",
-      `${analysis.classification} (confianza ${analysis.confidence}) → ${analysis.recommendedAction}`
+      `${analysis.classification} (confidence ${analysis.confidence}) → ${analysis.recommendedAction}`
     );
-    if (analysis.rootCause) log.info("analyst", `Causa raíz: ${analysis.rootCause}`);
+    if (analysis.rootCause) log.info("analyst", `Root cause: ${analysis.rootCause}`);
 
-    // ── Regla 1: reintentos automáticos para fallos posiblemente transitorios ──
+    // ── Rule 1: automatic retries for possibly transient failures ──────────
     const wantsRetry =
       analysis.recommendedAction === "retry" &&
       analysis.classification !== "product_bug" &&
       failure.retries < config.MAX_RETRIES;
 
     if (wantsRetry) {
-      log.step("engine", `Reintento ${failure.retries + 1}/${config.MAX_RETRIES} de "${failure.title}"`);
+      log.step("engine", `Retry ${failure.retries + 1}/${config.MAX_RETRIES} of "${failure.title}"`);
       const rerun = await runPlaywright([failure.file], {
         grep: escapeRegExp(failure.title),
         label: "retry",
@@ -73,22 +72,22 @@ export async function handleFailures(
           finalStatus: "flaky",
           analysis,
           action: "comment",
-          rationale: `Pasó al reintento (${analysis.rootCause}). Marcado como flaky; se comenta en Jira sin abrir bug.`,
+          rationale: `Passed on retry (${analysis.rootCause}). Marked as flaky; commented on Jira without opening a bug.`,
         });
         await jira.addComment(
           ctx.ticketKey,
           [
-            `⚠️ *Posible flaky*: el test \`${failure.title}\` falló pero pasó en reintento automático.`,
-            `Análisis del agente: ${analysis.rootCause}`,
+            `⚠️ *Possible flaky*: the test \`${failure.title}\` failed but passed on automatic retry.`,
+            `Agent analysis: ${analysis.rootCause}`,
           ].join("\n")
         );
         continue;
       }
 
-      log.warn("engine", "El reintento también falló; se procede con la evaluación definitiva.");
+      log.warn("engine", "The retry also failed; proceeding with the definitive evaluation.");
     }
 
-    // ── Regla 2: bug automático si el agente confirma product_bug con confianza suficiente ──
+    // ── Rule 2: automatic bug when the agent confirms product_bug with enough confidence
     const shouldCreateBug =
       analysis.classification === "product_bug" &&
       analysis.confidence >= config.BUG_CONFIDENCE_THRESHOLD;
@@ -109,12 +108,12 @@ export async function handleFailures(
 
       if (config.JIRA_TRANSITION_BUG) {
         const moved = await jira.transitionByName(ctx.ticketKey, config.JIRA_TRANSITION_BUG);
-        if (!moved) log.warn("jira", `Transición "${config.JIRA_TRANSITION_BUG}" no disponible para ${ctx.ticketKey}`);
+        if (!moved) log.warn("jira", `Transition "${config.JIRA_TRANSITION_BUG}" not available for ${ctx.ticketKey}`);
       }
     } else if (!shouldCreateBug && analysis.classification === "product_bug") {
       log.warn(
         "engine",
-        `product_bug con confianza ${analysis.confidence} < umbral ${config.BUG_CONFIDENCE_THRESHOLD}; no se abre bug automáticamente.`
+        `product_bug with confidence ${analysis.confidence} < threshold ${config.BUG_CONFIDENCE_THRESHOLD}; not opening a bug automatically.`
       );
     }
 
@@ -127,8 +126,8 @@ export async function handleFailures(
       action: bugKey ? "create_bug" : analysis.recommendedAction === "escalate" ? "escalate" : "comment",
       bugKey,
       rationale: bugKey
-        ? `Bug ${bugKey} creado con evidencia adjunta.`
-        : `Sin apertura automática de bug (${analysis.classification}, confianza ${analysis.confidence}).`,
+        ? `Bug ${bugKey} created with attached evidence.`
+        : `No automatic bug opening (${analysis.classification}, confidence ${analysis.confidence}).`,
     });
   }
 

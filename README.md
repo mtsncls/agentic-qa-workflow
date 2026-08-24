@@ -1,148 +1,146 @@
 # Agentic QA Workflow
 
-Integración real entre **Claude Code**, **Playwright** y **Jira** dentro de un
-workflow de QA Automation / Agentic Testing. Los agentes no solo ejecutan
-pruebas: planifican, generan tests, analizan evidencia real (screenshots,
-traces) y toman decisiones automatizadas que terminan en acciones concretas en
-Jira.
+Real integration between **Claude Code**, **Playwright** and **Jira** within a
+QA Automation / Agentic Testing workflow. The agents don't just run tests: they
+plan, generate tests, analyze real evidence (screenshots, traces) and make
+automated decisions that end up as concrete actions in Jira.
 
-## Flujo completo
+## Full flow
 
 ```
 Jira / Acceptance Criteria
         │  (REST API v3)
         ▼
-Planner agéntico (Claude Code SDK)
-        │  plan de testing JSON validado + specs faltantes
+Agentic Planner (Claude Code SDK)
+        │  JSON test plan validated + missing specs
         ▼
-[Generator] ──opcional──► escribe .spec.ts nuevos en el repo
+[Generator] ──optional──► writes new .spec.ts files into the repo
         ▼
-Playwright Runner ──► resultados + screenshots + video + trace
+Playwright Runner ──► results + screenshots + video + trace
         ▼
-Analyst agéntico (Claude lee la evidencia)
-        │  clasificación: product_bug | flaky | test_issue | environment (+ confianza)
+Agentic Analyst (Claude reads the evidence)
+        │  classification: product_bug | flaky | test_issue | environment (+ confidence)
         ▼
-Decision Engine (reglas + veredicto del agente)
-        │  retry automático · abrir bug · comentar · escalar
+Decision Engine (rules + agent verdict)
+        │  automatic retry · open bug · comment · escalate
         ▼
-Jira: bug con evidencia adjunta · link al ticket · comentario · transición
+Jira: bug with attached evidence · link to ticket · comment · transition
 ```
 
-## Estructura
+## Structure
 
 ```
 src/
 ├── agents/
-│   ├── claude.ts        # Wrapper sobre @anthropic-ai/claude-agent-sdk
-│   ├── planner.ts       # AC ↔ inventario de tests → plan JSON (zod)
-│   ├── generator.ts     # Genera specs faltantes (Claude escribe en el repo)
-│   └── analyst.ts       # Diagnóstico de fallas leyendo evidencia real
+│   ├── claude.ts        # Wrapper around @anthropic-ai/claude-agent-sdk
+│   ├── planner.ts       # AC ↔ test inventory → JSON plan (zod)
+│   ├── generator.ts     # Generates missing specs (Claude writes into the repo)
+│   └── analyst.ts       # Failure diagnosis reading real evidence
 ├── jira/
-│   ├── client.ts        # REST API v3 (issues, comentarios, adjuntos, links, transiciones)
-│   ├── mock.ts          # Jira simulado en memoria (MOCK_JIRA=1)
-│   ├── acceptance.ts    # Extracción/parsing de criterios de aceptación
-│   └── reporter.ts      # Bug creation con evidencia + comentarios de cierre
+│   ├── client.ts        # REST API v3 (issues, comments, attachments, links, transitions)
+│   ├── mock.ts          # In-memory simulated Jira (MOCK_JIRA=1)
+│   ├── acceptance.ts    # Acceptance criteria extraction/parsing
+│   └── reporter.ts      # Bug creation with evidence + closing comments
 ├── playwright/
-│   ├── runner.ts        # Ejecuta `playwright test` y parsea el reporte JSON
+│   ├── runner.ts        # Runs `playwright test` and parses the JSON report
 ├── decisions/
-│   └── engine.ts        # Reglas deterministas + veredicto LLM → acciones
+│   └── engine.ts        # Deterministic rules + LLM verdict → actions
 ├── workflow/
-│   └── pipeline.ts      # Orquestación end-to-end + manifest de auditoría
+│   └── pipeline.ts      # End-to-end orchestration + audit manifest
 └── index.ts             # CLI (commander)
-tests/e2e/               # Suite E2E contra saucedemo.com
+tests/e2e/               # E2E suite against saucedemo.com
 ├── pages/               # Page Object Model (LoginPage, ProductsPage, CartPage,
-│                        #   CheckoutPage, PageManager) — selectores data-test/getByTestId
-├── fixtures.ts          # Fixture compartida: inyecta PageManager como `pm`
-├── login.spec.ts        # ACs de autenticación (3 tests)
-├── cart.spec.ts         # Carrito + logout (3 tests)
-├── checkout.spec.ts     # Flujo completo de compra
-└── demo-fail.spec.ts    # Falla simulada para demostrar creación de bugs
-.github/workflows/ci.yml # Lint+typecheck, E2E chromium, nightly firefox, smoke del pipeline
-artifacts/<run-id>/      # Evidencia: pw-report.json, screenshots, video, trace, manifest
+│                        #   CheckoutPage, PageManager) — data-test/getByTestId selectors
+├── fixtures.ts          # Shared fixture: injects PageManager as `pm`
+├── login.spec.ts        # Authentication ACs (3 tests)
+├── cart.spec.ts         # Cart + logout (3 tests)
+├── checkout.spec.ts     # Full purchase flow
+└── demo-fail.spec.ts    # Simulated failure to demonstrate bug creation
+.github/workflows/ci.yml # Lint+typecheck, chromium E2E, nightly firefox, pipeline smoke
+artifacts/<run-id>/      # Evidence: pw-report.json, screenshots, video, trace, manifest
 ```
 
-El suite E2E unifica lo mejor de dos proyectos previos del portfolio:
+The E2E suite unifies the best of two previous portfolio projects:
 [`playwright-saucedemo`](https://github.com/mtsncls/playwright-saucedemo)
-(POM, ESLint/Prettier, Allure, CI multi-browser) y los specs de este repo.
+(POM, ESLint/Prettier, Allure, multi-browser CI) and this repo's original specs.
 
-## Requisitos
+## Requirements
 
 - Node.js ≥ 20
-- Una API key de Anthropic ([console.anthropic.com](https://console.anthropic.com/settings/keys))
-- Jira Cloud con API token ([crear token](https://id.atlassian.com/manage-profile/security/api-tokens)) — o `MOCK_JIRA=1` para probar sin Jira
+- An Anthropic API key ([console.anthropic.com](https://console.anthropic.com/settings/keys))
+- Jira Cloud with an API token ([create token](https://id.atlassian.com/manage-profile/security/api-tokens)) — or `MOCK_JIRA=1` to try without Jira
 
 ## Setup
 
 ```bash
 npm install
 npx playwright install chromium
-cp .env.example .env       # completa tus credenciales
+cp .env.example .env       # fill in your credentials
 npm run typecheck          # sanity check
 ```
 
-## Uso
+## Usage
 
 ```bash
-npm run lint            # ESLint (incluye reglas de Playwright)
+npm run lint            # ESLint (includes Playwright rules)
 npm run typecheck       # TypeScript
-npm run test:e2e        # suite E2E local (chromium + reporte HTML/Allure)
-npm run allure:serve    # genera y abre el reporte Allure
-MOCK_JIRA=1 DRY_RUN=1 npm run qa -- run -t QA-101   # pipeline sin credenciales
+npm run test:e2e        # local E2E suite (chromium + HTML/Allure report)
+npm run allure:serve    # generates and opens the Allure report
+MOCK_JIRA=1 DRY_RUN=1 npm run qa -- run -t QA-101   # pipeline without credentials
 ```
 
-CI (`.github/workflows/ci.yml`): quality gate (lint+typecheck) → E2E chromium
-en cada push/PR → matriz nightly con firefox → smoke del pipeline agéntico
-(mock Jira + dry-run, sin secrets). Dependabot semanal para npm y actions.
+CI (`.github/workflows/ci.yml`): quality gate (lint+typecheck) → chromium E2E
+on every push/PR → nightly firefox matrix → agentic pipeline smoke
+(mock Jira + dry-run, no secrets needed). Weekly Dependabot for npm and actions.
 
-### Demo completa sin credenciales (recomendado primero)
+### Full demo without credentials (recommended first)
 
 ```bash
-# Todo pasa: comentario de cierre en Jira (mock)
+# Everything passes: closing comment on Jira (mocked)
 MOCK_JIRA=1 DRY_RUN=1 npm run qa -- run -t QA-101
 
-# Simula una regresión: falla → análisis → BUG creado en Jira (mock) con evidencia
+# Simulates a regression: failure → analysis → BUG created in Jira (mocked) with evidence
 MOCK_JIRA=1 DRY_RUN=1 DEMO_FAIL=1 npm run qa -- run -t QA-101
 ```
 
-En modo mock verás en consola cada acción "hecha en Jira": bug `QA-201`
-creado con screenshot/video/trace adjuntos, link `Blocks → QA-101`,
-comentarios y transiciones.
+In mock mode you will see every "action done in Jira" printed on the console:
+bug `QA-201` created with screenshot/video/trace attached, `Blocks → QA-101`
+link, comments and transitions.
 
-### Con Jira y Claude reales
+### With real Jira and Claude
 
 ```bash
-npm run qa -- jira-check              # valida credenciales
-npm run qa -- plan -t SCRUM-42       # solo el plan de testing (JSON)
-npm run qa -- run -t SCRUM-42        # pipeline completo
-npm run qa -- run -t SCRUM-42 -g     # + genera specs para criterios sin cobertura
+npm run qa -- jira-check              # validates credentials
+npm run qa -- plan -t SCRUM-42       # only the testing plan (JSON)
+npm run qa -- run -t SCRUM-42        # full pipeline
+npm run qa -- run -t SCRUM-42 -g     # + generates specs for uncovered criteria
 ```
 
-El ticket debe tener los criterios de aceptación como viñetas (`-`) en su
-descripción (o en el customfield configurado en `JIRA_AC_FIELD`).
+The ticket must have its acceptance criteria as bullets (`-`) in the
+description (or in the custom field configured via `JIRA_AC_FIELD`).
 
-## Decisiones automatizadas
+## Automated decisions
 
-| Situación detectada | Acción automática |
+| Detected situation | Automatic action |
 |---|---|
-| Falla posiblemente transitoria (`flaky`, `environment`) | Reintento hasta `MAX_RETRIES`; si pasa → marcada flaky + comentario |
-| `product_bug` con confianza ≥ `BUG_CONFIDENCE_THRESHOLD` | **Bug en Jira** con screenshot/video/trace, link al ticket y transición opcional |
-| `product_bug` con baja confianza | Comentario informativo, sin apertura automática |
-| `test_issue` / `environment` confirmados | Comentario en el ticket con causa raíz y sugerencia |
-| Todo pasó | Comentario de cierre + transición opcional (`JIRA_TRANSITION_PASS`) |
+| Possibly transient failure (`flaky`, `environment`) | Retry up to `MAX_RETRIES`; if it passes → marked flaky + comment |
+| `product_bug` with confidence ≥ `BUG_CONFIDENCE_THRESHOLD` | **Jira bug** with screenshot/video/trace, link to ticket and optional transition |
+| `product_bug` with low confidence | Informative comment, no automatic bug opening |
+| Confirmed `test_issue` / `environment` | Comment on the ticket with root cause and suggestion |
+| Everything passed | Closing comment + optional transition (`JIRA_TRANSITION_PASS`) |
 
-Cada corrida deja un `manifest.json` auditable en `artifacts/<run-id>/`.
+Every run leaves an auditable `manifest.json` under `artifacts/<run-id>/`.
 
-## Integraciones alternativas con Jira
+## Alternative Jira integrations
 
-Además del cliente REST v3 incluido (`src/jira/client.ts`), puedes enchufar el
-**MCP de Atlassian** a los agentes Claude. Ver `mcp.jira.example.json`. El
-wrapper del SDK (`src/agents/claude.ts`) soporta pasarle servidores MCP vía la
-opción `mcpServers` del `query()`.
+Besides the included REST v3 client (`src/jira/client.ts`), you can plug the
+**Atlassian MCP server** into the Claude agents. See `mcp.jira.example.json`.
+The SDK wrapper (`src/agents/claude.ts`) supports passing MCP servers through
+the `mcpServers` option of `query()`.
 
-## Notas de seguridad
+## Security notes
 
-- Nunca commitear `.env` (ya está en `.gitignore`).
-- El agente Generator corre con `permissionMode: acceptEdits` limitado a
-  herramientas de lectura/escritura de archivos; no tiene Bash.
-- Toda respuesta de LLM se valida con zod antes de usarse.
-# agentic-qa-workflow
+- Never commit `.env` (already gitignored).
+- The Generator agent runs with `permissionMode: acceptEdits`, restricted to
+  read/write file tools; it has no Bash access.
+- Every LLM response is validated with zod before being used.

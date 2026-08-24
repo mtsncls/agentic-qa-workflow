@@ -7,7 +7,7 @@ export interface AcceptanceCriterion {
   text: string;
 }
 
-/** Extrae el texto crudo del campo configurado como criterios de aceptación. */
+/** Extracts the raw text of the field configured as acceptance criteria. */
 function rawAcText(issue: JiraIssue): string {
   const field = config.JIRA_AC_FIELD;
   if (field === "description") return adfToText(issue.fields.description);
@@ -18,10 +18,10 @@ function rawAcText(issue: JiraIssue): string {
 }
 
 /**
- * Divide el texto en criterios individuales.
- * Prioriza líneas con viñetas (-, *, •) o numeradas; si no hay, usa párrafos
- * que empiecen con palabras tipo Gherkin ("Dado", "Given", "Cuando"...);
- * como último recurso, cada línea no vacía es un criterio.
+ * Splits the text into individual criteria.
+ * Prefers bullet lines (-, *, •) or numbered items; falls back to paragraphs
+ * starting with Gherkin-like words ("Given", "When", "Then", or their Spanish
+ * equivalents "Dado", "Cuando", "Entonces"); last resort: every non-empty line.
  */
 export function extractCriteria(issue: JiraIssue): AcceptanceCriterion[] {
   const lines = rawAcText(issue).split(/\r?\n/);

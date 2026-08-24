@@ -1,7 +1,7 @@
 {
   "name": "agentic-qa-workflow",
   "version": "0.1.0",
-  "description": "Workflow de QA Automation / Agentic Testing: Jira -> Claude (agentes) -> Playwright -> analisis -> acciones en Jira",
+  "description": "QA Automation / Agentic Testing workflow: Jira -> Claude (agents) -> Playwright -> analysis -> Jira actions",
   "private": true,
   "type": "module",
   "engines": {

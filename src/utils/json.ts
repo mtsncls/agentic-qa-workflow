@@ -1,8 +1,8 @@
 import type { ZodType } from "zod";
 
 /**
- * Extrae y valida el primer objeto JSON embebido en la respuesta de un LLM
- * (tolera fences ```json, texto previo/posterior, etc).
+ * Extracts and validates the first JSON object embedded in an LLM response
+ * (tolerates ```json fences, leading/trailing text, etc).
  */
 export function extractJson<T>(text: string, schema: ZodType<T>): T {
   let raw = text.trim();
@@ -14,7 +14,7 @@ export function extractJson<T>(text: string, schema: ZodType<T>): T {
     const start = raw.indexOf("{");
     const end = raw.lastIndexOf("}");
     if (start === -1 || end === -1 || end <= start) {
-      throw new Error(`Respuesta sin JSON válido:\n${text.slice(0, 500)}`);
+      throw new Error(`Response without valid JSON:\n${text.slice(0, 500)}`);
     }
     raw = raw.slice(start, end + 1);
   }
@@ -24,14 +24,14 @@ export function extractJson<T>(text: string, schema: ZodType<T>): T {
     parsed = JSON.parse(raw);
   } catch (err) {
     throw new Error(
-      `JSON inválido del agente: ${(err as Error).message}\n---\n${raw.slice(0, 500)}`
+      `Invalid JSON from agent: ${(err as Error).message}\n---\n${raw.slice(0, 500)}`
     );
   }
 
   const result = schema.safeParse(parsed);
   if (!result.success) {
     throw new Error(
-      `JSON no cumple el esquema esperado: ${result.error.message}\n---\n${raw.slice(0, 500)}`
+      `JSON does not match the expected schema: ${result.error.message}\n---\n${raw.slice(0, 500)}`
     );
   }
   return result.data;

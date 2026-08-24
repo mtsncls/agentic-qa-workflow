@@ -109,7 +109,7 @@ export async function runPlaywright(
     child.stdout.on("data", (d: Buffer) => (stdout += d.toString()));
     child.stderr.on("data", (d: Buffer) => (stderr += d.toString()));
     child.on("error", reject);
-    // Playwright devuelve código != 0 cuando hay fallas: eso NO es un error del runner.
+    // Playwright exits non-zero when tests fail: that is NOT a runner error.
     child.on("close", () => {
       fs.writeFileSync(reportPath, stdout || "{}");
       resolve();
@@ -150,7 +150,7 @@ export async function runPlaywright(
       }));
 
     results.push({
-      title: spec.title ?? "(sin título)",
+      title: spec.title ?? "(untitled)",
       file: spec.file ?? "",
       line: spec.line,
       status: hadFailureBeforePass ? "flaky" : normalizeStatus(finalRaw),

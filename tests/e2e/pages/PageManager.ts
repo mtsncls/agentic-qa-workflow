@@ -4,7 +4,7 @@ import { ProductsPage } from "./ProductsPage";
 import { CartPage } from "./CartPage";
 import { CheckoutPage } from "./CheckoutPage";
 
-/** Acceso centralizado a los Page Objects de una misma página. */
+/** Centralized access to the Page Objects for a single page. */
 export class PageManager {
   private readonly loginPage: LoginPage;
   private readonly productsPage: ProductsPage;

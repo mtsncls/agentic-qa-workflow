@@ -4,9 +4,9 @@ const STANDARD_USER = process.env.STANDARD_USER ?? "standard_user";
 const COMMON_PASSWORD = process.env.COMMON_PASSWORD ?? "secret_sauce";
 
 /**
- * AC-1: usuario válido inicia sesión y es redirigido al inventario.
- * AC-2: usuario bloqueado ve mensaje de error.
- * AC-3: credenciales inválidas muestran error sin acceder al inventario.
+ * AC-1: valid user logs in and is redirected to the inventory.
+ * AC-2: locked-out user sees an error message.
+ * AC-3: invalid credentials show an error without accessing the inventory.
  */
 test.describe("Authentication", () => {
   test("successful login redirects to inventory", async ({ page, pm }) => {

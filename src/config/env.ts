@@ -1,4 +1,3 @@
-import "dotenv/config";
 import { z } from "zod";
 
 const boolish = (def: "0" | "1") =>
@@ -33,7 +32,7 @@ const schema = z.object({
 
 const parsed = schema.safeParse(process.env);
 if (!parsed.success) {
-  console.error("Variables de entorno inválidas:", parsed.error.flatten().fieldErrors);
+  console.error("Invalid environment variables:", parsed.error.flatten().fieldErrors);
   process.exit(1);
 }
 
@@ -48,7 +47,7 @@ export function assertJiraConfigured(): void {
   ].filter(Boolean);
   if (missing.length) {
     throw new Error(
-      `Faltan variables de entorno de Jira: ${missing.join(", ")}. Copia .env.example a .env o usa MOCK_JIRA=1.`
+      `Missing Jira environment variables: ${missing.join(", ")}. Copy .env.example to .env or use MOCK_JIRA=1.`
     );
   }
 }
@@ -56,7 +55,7 @@ export function assertJiraConfigured(): void {
 export function assertClaudeConfigured(): void {
   if (config.DRY_RUN) return;
   if (!config.ANTHROPIC_API_KEY) {
-    throw new Error("Falta ANTHROPIC_API_KEY. Cópiala en .env o usa DRY_RUN=1 para probar el pipeline.");
+    throw new Error("ANTHROPIC_API_KEY is not set. Add it to .env or use DRY_RUN=1 to try the pipeline.");
   }
 }
 

@@ -4,7 +4,7 @@ import { MockJiraClient } from "./mock";
 
 let instance: JiraApi | undefined;
 
-/** Fábrica singleton: REST real o mock en memoria según MOCK_JIRA. */
+/** Singleton factory: real REST client or in-memory mock depending on MOCK_JIRA. */
 export function getJira(): JiraApi {
   if (!instance) {
     instance = config.MOCK_JIRA ? new MockJiraClient() : new RestJiraClient();

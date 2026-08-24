@@ -18,7 +18,7 @@ export default defineConfig({
   testDir: "tests/e2e",
   timeout: 45_000,
   expect: { timeout: 10_000 },
-  // Los reintentos los controla el pipeline agénticamente (engine), no Playwright.
+  // Retries are handled agentically by the pipeline (engine), not by Playwright.
   retries: 0,
   fullyParallel: false,
   workers: 1,

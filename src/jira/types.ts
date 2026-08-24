@@ -1,4 +1,4 @@
-/** Nodo de Atlassian Document Format (ADF), versión mínima para este proyecto. */
+/** Minimal Atlassian Document Format (ADF) node for this project. */
 export interface AdfNode {
   type: string;
   version?: number;

@@ -1,5 +1,5 @@
 import type { FailureAnalysis, TestResult } from "../agents/analyst";
-import { getJira } from "./index";
+import { getJira } from "../jira";
 import { config } from "../config/env";
 import { log } from "../utils/logger";
 import * as fs from "node:fs";
@@ -20,7 +20,7 @@ function extFor(p: string): string {
   return m ? m[1] : "bin";
 }
 
-/** Comentario de resumen de la corrida sobre el ticket de Jira. */
+/** Run summary comment posted on the Jira ticket. */
 export async function postRunComment(
   ticketKey: string,
   summary: {
@@ -35,25 +35,25 @@ export async function postRunComment(
 ): Promise<void> {
   const jira = getJira();
   const lines: string[] = [
-    "🤝 *Reporte automático de QA Agéntico*",
+    "🤝 *Automatic Agentic QA report*",
     "",
-    `Resultados Playwright: *${summary.passed}/${summary.total} OK*` +
-      (summary.failed ? ` | ❌ ${summary.failed} fallas` : "") +
+    `Playwright results: *${summary.passed}/${summary.total} OK*` +
+      (summary.failed ? ` | ❌ ${summary.failed} failures` : "") +
       (summary.flaky ? ` | ⚠️ ${summary.flaky} flaky` : ""),
   ];
   if (summary.bugsCreated.length) {
-    lines.push(`Bugs creados automáticamente: ${summary.bugsCreated.map((b) => b).join(", ")}`);
+    lines.push(`Bugs automatically created: ${summary.bugsCreated.map((b) => b).join(", ")}`);
   }
   if (summary.notes?.length) lines.push("", ...summary.notes.map((n) => `- ${n}`));
-  if (summary.runUrl) lines.push("", `Evidencia completa: ${summary.runUrl}`);
+  if (summary.runUrl) lines.push("", `Full evidence: ${summary.runUrl}`);
 
   await jira.addComment(ticketKey, lines.join("\n"));
-  log.ok("jira", `Comentario de resultados publicado en ${ticketKey}`);
+  log.ok("jira", `Results comment published on ${ticketKey}`);
 }
 
 /**
- * Crea un bug en Jira con toda la evidencia y lo linkea al ticket origen.
- * Devuelve la key del bug.
+ * Creates a bug in Jira with all the evidence and links it to the source
+ * ticket. Returns the bug key.
  */
 export async function createBugWithEvidence(
   sourceTicket: string,
@@ -65,21 +65,21 @@ export async function createBugWithEvidence(
   const jira = getJira();
 
   const description = [
-    "*Origen:* Pipeline QA Agéntico (Claude + Playwright)",
-    `*Ticket padre:* ${sourceTicket} (${jira.issueUrl(sourceTicket)})`,
-    `*Criterio de aceptación relacionado:* ${criterion || "(no mapeado)"}`,
+    "*Source:* Agentic QA pipeline (Claude + Playwright)",
+    `*Parent ticket:* ${sourceTicket} (${jira.issueUrl(sourceTicket)})`,
+    `*Related acceptance criterion:* ${criterion || "(not mapped)"}`,
     `*Test:* \`${failure.title}\` — \`${failure.file}:${failure.line ?? "?"}\``,
     "",
-    "*Error observado:*",
-    `{code}${failure.errors[0]?.slice(0, 1500) ?? "(sin mensaje)"}{code}`,
+    "*Observed error:*",
+    `{code}${failure.errors[0]?.slice(0, 1500) ?? "(no message)"}{code}`,
     "",
-    "*Análisis del agente (Claude):*",
-    `- Clasificación: ${analysis.classification} (confianza ${analysis.confidence})`,
-    `- Causa raíz probable: ${analysis.rootCause}`,
-    `- Evidencia: ${analysis.evidenceSummary}`,
-    analysis.suggestedFix ? `- Sugerencia de corrección: ${analysis.suggestedFix}` : "",
+    "*Agent analysis (Claude):*",
+    `- Classification: ${analysis.classification} (confidence ${analysis.confidence})`,
+    `- Probable root cause: ${analysis.rootCause}`,
+    `- Evidence: ${analysis.evidenceSummary}`,
+    analysis.suggestedFix ? `- Suggested fix: ${analysis.suggestedFix}` : "",
     "",
-    `_Evidencia adjunta: ${evidence.map((e) => e.name).join(", ") || "ninguna"}_`,
+    `_Attached evidence: ${evidence.map((e) => e.name).join(", ") || "none"}_`,
   ]
     .filter(Boolean)
     .join("\n");
@@ -105,6 +105,6 @@ export async function createBugWithEvidence(
     evidence.map((e) => ({ filename: e.name, path: e.path }))
   );
   await jira.linkIssues(config.JIRA_LINK_TYPE, bugKey, sourceTicket);
-  log.ok("jira", `Bug ${bugKey} creado y linkeado a ${sourceTicket}`);
+  log.ok("jira", `Bug ${bugKey} created and linked to ${sourceTicket}`);
   return bugKey;
 }

@@ -29,29 +29,29 @@ export interface PipelineSummary {
 }
 
 /**
- * Pipeline completo del workflow de QA Agéntico:
+ * Full agentic QA workflow pipeline:
  *
- *   Jira (AC) → Planner (Claude) → [generación de tests] → Playwright
- *     → Analyst (Claude) → Engine de decisiones → Jira (bugs / comentarios / transiciones)
+ *   Jira (AC) → Planner (Claude) → [test generation] → Playwright
+ *     → Analyst (Claude) → decision engine → Jira (bugs / comments / transitions)
  */
 export async function runPipeline(opts: PipelineOptions): Promise<PipelineSummary> {
   assertJiraConfigured();
   const jira = getJira();
   const startedAll = Date.now();
 
-  // ── 1. Ticket + criterios de aceptación ─────────────────────────────────
-  log.banner(`QA AGENTIC PIPELINE · ${opts.ticket}`);
-  log.step("jira", `Obteniendo ticket ${opts.ticket}…`);
+  // ── 1. Ticket + acceptance criteria ─────────────────────────────────────
+  log.banner(`AGENTIC QA PIPELINE · ${opts.ticket}`);
+  log.step("jira", `Fetching ticket ${opts.ticket}…`);
   const issue = await jira.getIssue(opts.ticket);
   log.ok("jira", `"${issue.fields.summary}" (${issue.fields.status?.name ?? "?"}) — ${jira.issueUrl(issue.key)}`);
 
   const criteria = extractCriteria(issue);
-  log.info("jira", `${criteria.length} criterios de aceptación detectados`);
+  log.info("jira", `${criteria.length} acceptance criteria detected`);
   criteria.forEach((c) => log.info("ac", `${c.index}. ${c.text.slice(0, 110)}`));
 
-  // ── 2. Planner agéntico: AC ↔ tests existentes ──────────────────────────
+  // ── 2. Agentic planner: AC ↔ existing tests ─────────────────────────────
   assertClaudeConfigured();
-  log.step("planner", "Mapeando criterios contra el inventario de specs…");
+  log.step("planner", "Mapping criteria against the spec inventory…");
   const inventory = listSpecs();
   const plan = await planTesting(opts.ticket, issue.fields.summary, criteria, inventory);
   log.agent("planner", plan.strategy);
@@ -62,22 +62,22 @@ export async function runPipeline(opts: PipelineOptions): Promise<PipelineSummar
     )
   );
 
-  // ── 3. Generación agéntica de tests faltantes (opcional) ────────────────
+  // ── 3. Agentic generation of missing tests (optional) ───────────────────
   let generatedFiles: string[] = [];
   if (opts.generate && plan.generate.length) {
-    log.step("generator", `${plan.generate.length} spec(s) a generar con Claude Code…`);
+    log.step("generator", `${plan.generate.length} spec(s) to generate with Claude Code…`);
     generatedFiles = (await generateMissingTests(plan)).map((g) => g.file);
     plan.specsToRun.push(...generatedFiles);
   } else if (plan.generate.length) {
-    log.warn("generator", `${plan.generate.length} criterio(s) sin cobertura (usa --generate para crear tests automáticamente)`);
+    log.warn("generator", `${plan.generate.length} criterion(s) without coverage (use --generate to create tests automatically)`);
   }
 
   if (!plan.specsToRun.length) {
-    throw new Error("El planner no seleccionó ningún spec para ejecutar.");
+    throw new Error("The planner did not select any spec to run.");
   }
 
-  // ── 4. Ejecución Playwright ──────────────────────────────────────────────
-  log.step("playwright", `Ejecutando ${plan.specsToRun.length} spec(s) contra ${config.APP_BASE_URL}`);
+  // ── 4. Playwright execution ─────────────────────────────────────────────
+  log.step("playwright", `Running ${plan.specsToRun.length} spec(s) against ${config.APP_BASE_URL}`);
   const run = await runPlaywright([...new Set(plan.specsToRun)], { label: `pipeline-${opts.ticket.replace(/[^\w-]/g, "")}` });
   log.ok(
     "playwright",
@@ -87,7 +87,7 @@ export async function runPipeline(opts: PipelineOptions): Promise<PipelineSummar
   );
   log.info("artifacts", run.outputDir);
 
-  // ── 5. Análisis + decisiones automáticas sobre fallas ────────────────────
+  // ── 5. Analysis + automatic decisions on failures ───────────────────────
   const failures = run.results.filter((r) => r.status === "failed");
   const criterionFor = (testTitle: string): string | undefined =>
     plan.coverage.find((c) =>
@@ -99,7 +99,7 @@ export async function runPipeline(opts: PipelineOptions): Promise<PipelineSummar
     ? await handleFailures(failures, { ticketKey: opts.ticket, criterionFor })
     : { decisions: [] as Decision[], bugsCreated: [] as string[] };
 
-  // ── 6. Cierre en Jira: comentario con el resultado y transición opcional ─
+  // ── 6. Jira closing: results comment and optional transition ────────────
   await postRunComment(opts.ticket, {
     total: run.stats.total,
     passed: run.stats.passed,
@@ -108,22 +108,22 @@ export async function runPipeline(opts: PipelineOptions): Promise<PipelineSummar
     bugsCreated,
     runUrl: jira.issueUrl(opts.ticket),
     notes: [
-      `Evidencia local: ${path.resolve(run.outputDir)}`,
+      `Local evidence: ${path.resolve(run.outputDir)}`,
       ...(decisions.length ? decisions.map((d) => `${d.test}: ${d.rationale}`) : []),
-      `Estrategia: ${plan.strategy}`,
+      `Strategy: ${plan.strategy}`,
     ],
   });
 
   if (!failures.length && !run.stats.flaky && config.JIRA_TRANSITION_PASS) {
     const moved = await jira.transitionByName(opts.ticket, config.JIRA_TRANSITION_PASS);
     if (moved) {
-      log.ok("jira", `${opts.ticket} movido con transición "${config.JIRA_TRANSITION_PASS}"`);
+      log.ok("jira", `${opts.ticket} moved with transition "${config.JIRA_TRANSITION_PASS}"`);
     } else {
-      log.warn("jira", `Transición "${config.JIRA_TRANSITION_PASS}" no encontrada`);
+      log.warn("jira", `Transition "${config.JIRA_TRANSITION_PASS}" not found`);
     }
   }
 
-  // ── 7. Manifest de la corrida (auditoría completa) ───────────────────────
+  // ── 7. Run manifest (full audit trail) ──────────────────────────────────
   const summary: PipelineSummary = {
     ticket: opts.ticket,
     issueUrl: jira.issueUrl(opts.ticket),
@@ -143,13 +143,13 @@ export async function runPipeline(opts: PipelineOptions): Promise<PipelineSummar
     JSON.stringify(criteria, null, 2)
   );
 
-  log.banner("RESUMEN DEL PIPELINE");
+  log.banner("PIPELINE SUMMARY");
   console.log(`Ticket:        ${summary.issueUrl}`);
-  console.log(`Tests:         ${run.stats.passed}/${run.stats.total} OK (${run.stats.failed} fallas, ${run.stats.flaky} flaky)`);
-  console.log(`Bugs creados:  ${bugsCreated.join(", ") || "ninguno"}`);
-  console.log(`Generados:     ${generatedFiles.join(", ") || "ninguno"}`);
+  console.log(`Tests:         ${run.stats.passed}/${run.stats.total} OK (${run.stats.failed} failures, ${run.stats.flaky} flaky)`);
+  console.log(`Bugs created:  ${bugsCreated.join(", ") || "none"}`);
+  console.log(`Generated:     ${generatedFiles.join(", ") || "none"}`);
   console.log(`Manifest:      ${summary.manifestPath}`);
-  console.log(`Duración:      ${((Date.now() - startedAll) / 1000).toFixed(1)}s`);
+  console.log(`Duration:      ${((Date.now() - startedAll) / 1000).toFixed(1)}s`);
 
   return summary;
 }

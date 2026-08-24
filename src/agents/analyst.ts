@@ -27,15 +27,15 @@ export interface TestResult {
   retries: number;
 }
 
-const SYSTEM = `Eres un SDET agéntico especializado en diagnóstico de fallos E2E con Playwright.
-Recibirás el detalle de un test fallido (error, stack, snippet del spec y rutas de evidencia como screenshots).
-Puedes usar la herramienta Read para inspeccionar la imagen del screenshot y los archivos fuente antes de decidir.
-Clasifica el fallo:
-- product_bug: la aplicación no cumple el comportamiento esperado.
-- flaky: parece inestabilidad de timing/async; recomienda retry.
-- test_issue: selector roto, test desactualizado o mal escrito.
-- environment: red/infraestructura/datos externos.
-Responde ÚNICAMENTE con JSON válido:
+const SYSTEM = `You are an agentic SDET specialized in diagnosing E2E failures with Playwright.
+You will receive the details of a failed test (error, stack, spec snippet and evidence paths such as screenshots).
+You may use the Read tool to inspect the screenshot image and source files before deciding.
+Classify the failure:
+- product_bug: the application does not behave as expected.
+- flaky: looks like timing/async instability; recommend a retry.
+- test_issue: broken selector, outdated or badly written test.
+- environment: network/infrastructure/external data issues.
+Respond with VALID JSON ONLY:
 {"classification":"product_bug|flaky|test_issue|environment","confidence":0.0-1.0,"rootCause":"...","evidenceSummary":"...","recommendedAction":"create_bug|retry|fix_test|escalate","severity":"highest|high|medium|low","suggestedFix":"..."}`;
 
 export interface FailureInput {
@@ -54,31 +54,31 @@ function specSnippet(file: string, line?: number): string {
       .map((l, i) => `${from + i + 1}: ${l}`)
       .join("\n");
   } catch {
-    return "(no se pudo leer el archivo)";
+    return "(could not read file)";
   }
 }
 
-/** Analista determinista para DRY_RUN basado en heurísticas simples. */
+/** Deterministic analyst for DRY_RUN based on simple heuristics. */
 function dryRunAnalysis(input: FailureInput): FailureAnalysis {
   const err = input.result.errors.join(" ");
-  // Las aserciones fallidas de Playwright incluyen Expected/Received.
+  // Failed Playwright assertions include Expected/Received.
   if (/expected[\s\S]*received|received[\s\S]*expected|expect\(.*\)\./i.test(err)) {
     return {
       classification: "product_bug",
       confidence: 0.85,
-      rootCause: "[dry-run] El comportamiento observado difiere del esperado según el criterio.",
-      evidenceSummary: "Screenshot y mensaje de error revisados por heurística DRY_RUN.",
+      rootCause: "[dry-run] Observed behavior differs from what the criterion expects.",
+      evidenceSummary: "Screenshot and error message reviewed by the DRY_RUN heuristic.",
       recommendedAction: "create_bug",
       severity: "high",
-      suggestedFix: "Revisar implementación del flujo contra el criterio de aceptación.",
+      suggestedFix: "Review the flow implementation against the acceptance criterion.",
     };
   }
   if (/timeouterror|net::ERR/i.test(err)) {
     return {
       classification: "environment",
       confidence: 0.6,
-      rootCause: "Timeout de infraestructura o servicio no disponible detectado por heurística.",
-      evidenceSummary: "Mensaje de error sugiere latencia o servicio no disponible.",
+      rootCause: "Infrastructure timeout or unavailable service detected by heuristic.",
+      evidenceSummary: "Error message suggests latency or an unavailable service.",
       recommendedAction: "retry",
       severity: "low",
     };
@@ -86,7 +86,7 @@ function dryRunAnalysis(input: FailureInput): FailureAnalysis {
   return {
     classification: "test_issue",
     confidence: 0.5,
-    rootCause: "[dry-run] No se pudo clasificar mejor sin LLM.",
+    rootCause: "[dry-run] Could not classify better without an LLM.",
     evidenceSummary: "n/a",
     recommendedAction: "fix_test",
     severity: "medium",
@@ -98,26 +98,26 @@ export async function analyzeFailure(input: FailureInput): Promise<FailureAnalys
 
   const { result } = input;
   const prompt = [
-    `TICKET JIRA: ${input.ticketKey}`,
-    input.criterion ? `CRITERIO DE ACEPTACIÓN RELACIONADO:\n${input.criterion}` : "",
+    `JIRA TICKET: ${input.ticketKey}`,
+    input.criterion ? `RELATED ACCEPTANCE CRITERION:\n${input.criterion}` : "",
     "",
-    `TEST FALLIDO: "${result.title}"`,
-    `ARCHIVO: ${result.file}${result.line ? `:${result.line}` : ""}`,
-    `REINTENTOS PREVIOS: ${result.retries}`,
+    `FAILED TEST: "${result.title}"`,
+    `FILE: ${result.file}${result.line ? `:${result.line}` : ""}`,
+    `PREVIOUS RETRIES: ${result.retries}`,
     "",
-    "MENSAJES DE ERROR:",
-    result.errors.map((e) => stripAnsi(e).slice(0, 1200)).join("\n---\n") || "(sin error)",
+    "ERROR MESSAGES:",
+    result.errors.map((e) => stripAnsi(e).slice(0, 1200)).join("\n---\n") || "(no error)",
     "",
-    `SNIPPET DEL SPEC (${result.file}):`,
+    `SPEC SNIPPET (${result.file}):`,
     "```typescript",
     specSnippet(result.file, result.line),
     "```",
     "",
     result.attachments.length
-      ? `EVIDENCIA DISPONIBLE (puedes leerla con Read): ${result.attachments.map((a) => a.path).join(", ")}`
-      : "SIN EVIDENCIA ADJUNTA.",
+      ? `AVAILABLE EVIDENCE (you may read it with Read): ${result.attachments.map((a) => a.path).join(", ")}`
+      : "NO ATTACHED EVIDENCE.",
     "",
-    "Analiza y responde SOLO con el JSON de clasificación.",
+    "Analyze it and respond ONLY with the classification JSON.",
   ]
     .filter(Boolean)
     .join("\n");

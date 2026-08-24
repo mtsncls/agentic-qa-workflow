@@ -108,15 +108,15 @@ jobs:
       - run: npm ci
       - run: npx playwright install chromium --with-deps
 
-      # Pipeline completo sin credenciales: planner/analyst deterministas y Jira mockeado.
-      # Para modo real: define secrets ANTHROPIC_API_KEY, JIRA_* y quita MOCK_JIRA/DRY_RUN.
+      # Full pipeline without credentials: deterministic planner/analyst and mocked Jira.
+      # For real mode: define ANTHROPIC_API_KEY, JIRA_* secrets and remove MOCK_JIRA/DRY_RUN.
       - name: Run pipeline (MOCK_JIRA + DRY_RUN)
         env:
           MOCK_JIRA: "1"
           DRY_RUN: "1"
         run: npm run qa -- run -t QA-101
 
-      - name: Upload manifest de la corrida
+      - name: Upload run manifest
         if: always()
         uses: actions/upload-artifact@v4
         with:

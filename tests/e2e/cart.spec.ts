@@ -12,8 +12,8 @@ test.beforeEach(async ({ page, pm }) => {
 });
 
 /**
- * AC-4 (carrito): añadir productos al carrito y verlos.
- * AC-5 (sesión): cerrar sesión desde el menú lateral.
+ * AC-4 (cart): add products to the cart and view them.
+ * AC-5 (session): log out from the sidebar menu.
  */
 test.describe("Shopping cart", () => {
   test("added product appears in cart with correct badge", async ({ page, pm }) => {

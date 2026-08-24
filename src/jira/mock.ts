@@ -12,32 +12,31 @@ const STORY_QA_101: JiraIssue = {
   key: "QA-101",
   id: "10001",
   fields: {
-    summary: "Login de usuario en la tienda",
+    summary: "User login for the store",
     issuetype: { name: "Story" },
     status: { name: "In QA" },
     priority: { name: "High" },
     labels: ["frontend"],
     description: textToAdf(
       [
-        "Como cliente quiero iniciar sesión para acceder al catálogo.",
+        "As a customer I want to log in so I can access the catalog.",
         "",
         "Acceptance Criteria:",
-        "- Dado un usuario válido, cuando inicia sesión con credenciales correctas, entonces es redirigido a la página de inventario.",
-        "- Dado un usuario bloqueado, cuando intenta iniciar sesión, entonces ve el mensaje de error 'user has been locked out'.",
-        "- Dado credenciales inválidas, cuando envía el formulario de login, entonces se muestra un mensaje de error y no accede al inventario.",
-        "- El usuario puede cerrar sesión desde el menú lateral.",
+        "- Given a valid user, when they sign in with correct credentials, then they are redirected to the inventory page.",
+        "- Given a locked-out user, when they try to sign in, then they see the error message 'user has been locked out'.",
+        "- Given invalid credentials, when the login form is submitted, then an error message is shown and the inventory is not accessible.",
+        "- The user can log out from the sidebar menu.",
       ].join("\n")
     ),
   },
 };
 
 /**
- * Jira simulado en memoria (MOCK_JIRA=1): permite probar el pipeline completo
- * sin credenciales ni red. Conserva estado durante la ejecución del proceso.
+ * In-memory simulated Jira (MOCK_JIRA=1): allows exercising the whole pipeline
+ * without credentials or network. Keeps state during the process lifetime.
  */
 export class MockJiraClient implements JiraApi {
   private issues = new Map<string, JiraIssue>([["QA-101", structuredClone(STORY_QA_101)]]);
-  private transitionsByIssue = new Map<string, string>();
   private bugSeq = 200;
 
   issueUrl(key: string): string {
@@ -50,7 +49,7 @@ export class MockJiraClient implements JiraApi {
 
   async getIssue(key: string): Promise<JiraIssue> {
     const issue = this.issues.get(key.toUpperCase());
-    if (!issue) throw new Error(`[mock] Issue ${key} no existe (disponibles: ${[...this.issues.keys()].join(", ")})`);
+    if (!issue) throw new Error(`[mock] Issue ${key} does not exist (available: ${[...this.issues.keys()].join(", ")})`);
     return structuredClone(issue);
   }
 
@@ -60,7 +59,7 @@ export class MockJiraClient implements JiraApi {
 
   async addComment(issueKey: string, bodyText: string): Promise<void> {
     const issue = await this.getIssue(issueKey);
-    console.log(`\n[mock-jira] 💬 comentario en ${issue.key}:\n${bodyText.slice(0, 600)}${bodyText.length > 600 ? "…" : ""}\n`);
+    console.log(`\n[mock-jira] 💬 comment on ${issue.key}:\n${bodyText.slice(0, 600)}${bodyText.length > 600 ? "…" : ""}\n`);
   }
 
   async createBug(input: CreateBugInput): Promise<string> {
@@ -77,13 +76,13 @@ export class MockJiraClient implements JiraApi {
         description: textToAdf(input.descriptionText),
       },
     });
-    console.log(`\n[mock-jira] 🐛 bug creado ${key}: ${input.summary}\n`);
+    console.log(`\n[mock-jira] 🐛 bug created ${key}: ${input.summary}\n`);
     return key;
   }
 
   async attachFiles(issueKey: string, files: AttachInput[]): Promise<void> {
     const issue = await this.getIssue(issueKey);
-    console.log(`[mock-jira] 📎 adjuntos en ${issue.key}: ${files.map((f) => f.filename).join(", ") || "(ninguno)"}`);
+    console.log(`[mock-jira] 📎 attachments on ${issue.key}: ${files.map((f) => f.filename).join(", ") || "(none)"}`);
   }
 
   async getTransitions(issueKey: string): Promise<JiraTransition[]> {
@@ -102,7 +101,6 @@ export class MockJiraClient implements JiraApi {
     const issue = await this.getIssue(issueKey);
     issue.fields.status = { name: match.name };
     this.issues.set(issue.key, issue);
-    this.transitionsByIssue.set(issue.key, match.name);
     console.log(`[mock-jira] 🔁 ${issue.key} -> ${match.name}`);
     return true;
   }
@@ -111,4 +109,3 @@ export class MockJiraClient implements JiraApi {
     console.log(`[mock-jira] 🔗 link ${linkTypeName}: ${inwardKey} <-> ${outwardKey}`);
   }
 }
-
