@@ -93,6 +93,29 @@ CI (`.github/workflows/ci.yml`): quality gate (lint+typecheck) → chromium E2E
 on every push/PR → nightly firefox matrix → agentic pipeline smoke
 (mock Jira + dry-run, no secrets needed). Weekly Dependabot for npm and actions.
 
+The `Quality dashboard` workflow (`.github/workflows/dashboard.yml`) runs after
+each green CI run: it aggregates `artifacts/*/manifest.json` into
+`reporting/metrics-history.json` (idempotent by run id) and publishes both the
+agentic metrics dashboard and the Allure test report to GitHub Pages. Enable
+Pages once (**Settings → Pages → Source: "GitHub Actions"**), then both update
+automatically.
+
+## Live reports (GitHub Pages)
+
+| Report | URL |
+|---|---|
+| Agentic quality dashboard (KPIs, decision/classification trends) | `https://mtsncls.github.io/agentic-qa-workflow/` |
+| Allure execution report (steps, retries, attachments) | `https://mtsncls.github.io/agentic-qa-workflow/allure/` |
+
+Local preview:
+
+```bash
+npm run report
+cp reporting/metrics-history.json dashboard/
+npx serve dashboard          # or: python3 -m http.server --directory dashboard
+npm run allure:serve         # opens the local Allure report
+```
+
 ### Full demo without credentials (recommended first)
 
 ```bash
