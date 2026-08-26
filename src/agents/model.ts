@@ -33,6 +33,29 @@ export async function askModel(prompt: string, opts: AskOptions = {}): Promise<s
   if (opts.system) messages.push({ role: "system", content: opts.system });
   messages.push({ role: "user", content: prompt });
 
+  // Try the configured model, then fall back to OpenRouter's free auto-router if
+  // the chosen model is unavailable (free slugs rotate and 404 without warning).
+  const candidates = [config.LLM_MODEL];
+  if (config.LLM_MODEL !== "openrouter/free") candidates.push("openrouter/free");
+
+  let lastErr: unknown;
+  for (const model of candidates) {
+    try {
+      return await complete(model, messages);
+    } catch (err) {
+      lastErr = err;
+      const msg = (err as Error).message;
+      // Only retry on model-unavailable style failures; surface auth/quota errors immediately.
+      if (!/404|unavailable|not found/i.test(msg)) throw err;
+    }
+  }
+  throw lastErr;
+}
+
+async function complete(
+  model: string,
+  messages: { role: "system" | "user" | "assistant"; content: string }[]
+): Promise<string> {
   const res = await fetch(`${config.LLM_BASE_URL}/chat/completions`, {
     method: "POST",
     headers: {
@@ -42,7 +65,7 @@ export async function askModel(prompt: string, opts: AskOptions = {}): Promise<s
       "HTTP-Referer": "https://github.com/mtsncls/agentic-qa-workflow",
       "X-Title": "agentic-qa-workflow",
     },
-    body: JSON.stringify({ model: config.LLM_MODEL, messages, temperature: 0 }),
+    body: JSON.stringify({ model, messages, temperature: 0 }),
   });
 
   if (!res.ok) {

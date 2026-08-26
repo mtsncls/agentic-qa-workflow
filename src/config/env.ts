@@ -11,7 +11,7 @@ const schema = z.object({
 
   LLM_API_KEY: z.string().default(""),
   LLM_BASE_URL: z.string().default("https://openrouter.ai/api/v1"),
-  LLM_MODEL: z.string().default("deepseek/deepseek-chat:free"),
+  LLM_MODEL: z.string().default("qwen/qwen3-coder:free"),
   CLAUDE_MODEL: z.string().default("sonnet"),
 
   JIRA_BASE_URL: z.string().default(""),
