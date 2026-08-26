@@ -109,7 +109,7 @@ jobs:
       - run: npx playwright install chromium --with-deps
 
       # Full pipeline without credentials: deterministic planner/analyst and mocked Jira.
-      # For real mode: define ANTHROPIC_API_KEY, JIRA_* secrets and remove MOCK_JIRA/DRY_RUN.
+      # For real mode: define LLM_API_KEY (OpenRouter/OpenAI-compatible) + JIRA_* secrets and remove MOCK_JIRA/DRY_RUN.
       - name: Run pipeline (MOCK_JIRA + DRY_RUN)
         env:
           MOCK_JIRA: "1"

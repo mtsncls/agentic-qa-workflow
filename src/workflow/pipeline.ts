@@ -9,7 +9,7 @@ import type { TestResult } from "../agents/analyst";
 import { planTesting, type TestPlan } from "../agents/planner";
 import { generateMissingTests } from "../agents/generator";
 import { handleFailures, type Decision } from "../decisions/engine";
-import { assertClaudeConfigured, assertJiraConfigured } from "../config/env";
+import { assertModelConfigured, assertJiraConfigured } from "../config/env";
 import { log } from "../utils/logger";
 
 export interface PipelineOptions {
@@ -57,7 +57,7 @@ export async function runPipeline(opts: PipelineOptions): Promise<PipelineSummar
   criteria.forEach((c) => log.info("ac", `${c.index}. ${c.text.slice(0, 110)}`));
 
   // ── 2. Agentic planner: AC ↔ existing tests ─────────────────────────────
-  assertClaudeConfigured();
+  assertModelConfigured();
   log.step("planner", "Mapping criteria against the spec inventory…");
   const inventory = listSpecs();
   const plan = await planTesting(opts.ticket, issue.fields.summary, criteria, inventory);

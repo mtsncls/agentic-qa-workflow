@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { AcceptanceCriterion } from "../jira/acceptance";
-import { askClaude } from "./claude";
+import { askModel } from "./model";
 import { extractJson } from "../utils/json";
 import { config, } from "../config/env";
 import { collectSpecTags } from "../playwright/runner";
@@ -127,7 +127,7 @@ export async function planTesting(
 ): Promise<TestPlan> {
   if (config.DRY_RUN) return dryRunPlan(ticketKey, criteria, inventory);
 
-  const raw = await askClaude(buildPrompt(issueSummary, criteria, inventory), {
+  const raw = await askModel(buildPrompt(issueSummary, criteria, inventory), {
     system: SYSTEM,
     maxTurns: 2,
   });

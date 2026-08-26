@@ -1,14 +1,14 @@
 import { execSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { askClaude } from "../agents/claude";
+import { askModel } from "../agents/model";
 import { extractJson } from "../utils/json";
 import { z } from "zod";
 
 /**
  * CI failure analyzer.
  *
- * Triggered by a failed CI run. It feeds the failed logs to Claude, which
+ * Triggered by a failed CI run. It feeds the failed logs to the LLM, which
  * decides whether the failure is auto-fixable in the repository. If so, the
  * proposed file changes are applied and a PR is opened. Otherwise a GitHub
  * issue is opened as a human notification.
@@ -118,7 +118,7 @@ async function main(): Promise<void> {
 
   let text: string;
   try {
-    text = await askClaude(`CI RUN: ${runId}\nREPO: ${repo}\n\nFAILED LOGS:\n${log}`, {
+    text = await askModel(`CI RUN: ${runId}\nREPO: ${repo}\n\nFAILED LOGS:\n${log}`, {
       system: SYSTEM,
       maxTurns: 2,
     });

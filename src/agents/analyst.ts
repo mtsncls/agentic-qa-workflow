@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { askClaude } from "./claude";
+import { askModel } from "./model";
 import { extractJson, stripAnsi } from "../utils/json";
 import { config } from "../config/env";
 import * as fs from "node:fs";
@@ -123,7 +123,7 @@ export async function analyzeFailure(input: FailureInput): Promise<FailureAnalys
     .filter(Boolean)
     .join("\n");
 
-  const raw = await askClaude(prompt, {
+  const raw = await askModel(prompt, {
     system: SYSTEM,
     allowedTools: ["Read", "Glob", "Grep"],
     maxTurns: 6,

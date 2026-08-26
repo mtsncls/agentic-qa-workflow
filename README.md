@@ -32,9 +32,9 @@ Jira: bug with attached evidence · link to ticket · comment · transition
 ```
 src/
 ├── agents/
-│   ├── claude.ts        # Wrapper around @anthropic-ai/claude-agent-sdk
+│   ├── model.ts        # Provider-agnostic LLM client (OpenAI-compatible: OpenRouter/OpenAI/Ollama)
 │   ├── planner.ts       # AC ↔ test inventory → JSON plan (zod)
-│   ├── generator.ts     # Generates missing specs (Claude writes into the repo)
+│   ├── generator.ts     # Generates missing specs (LLM writes into the repo)
 │   └── analyst.ts       # Failure diagnosis reading real evidence
 ├── jira/
 │   ├── client.ts        # REST API v3 (issues, comments, attachments, links, transitions)
@@ -67,7 +67,7 @@ The E2E suite unifies the best of two previous portfolio projects:
 ## Requirements
 
 - Node.js ≥ 20
-- An Anthropic API key ([console.anthropic.com](https://console.anthropic.com/settings/keys))
+- An LLM provider key — OpenRouter is free ([openrouter.ai/keys](https://openrouter.ai/keys), free models like `deepseek/deepseek-chat:free`) and OpenAI-compatible; or OpenAI / a local Ollama. Configure `LLM_API_KEY`, `LLM_BASE_URL` and `LLM_MODEL` in `.env`.
 - Jira Cloud with an API token ([create token](https://id.atlassian.com/manage-profile/security/api-tokens)) — or `MOCK_JIRA=1` to try without Jira
 
 ## Setup
@@ -132,7 +132,7 @@ In mock mode you will see every "action done in Jira" printed on the console:
 bug `QA-201` created with screenshot/video/trace attached, `Blocks → QA-101`
 link, comments and transitions.
 
-### With real Jira and Claude
+### With real Jira and an LLM
 
 ```bash
 npm run qa -- jira-check              # validates credentials
@@ -158,10 +158,11 @@ Every run leaves an auditable `manifest.json` under `artifacts/<run-id>/`.
 
 ## Alternative Jira integrations
 
-Besides the included REST v3 client (`src/jira/client.ts`), you can plug the
-**Atlassian MCP server** into the Claude agents. See `mcp.jira.example.json`.
-The SDK wrapper (`src/agents/claude.ts`) supports passing MCP servers through
-the `mcpServers` option of `query()`.
+Besides the included REST v3 client (`src/jira/client.ts`), the previous
+implementation could plug the **Atlassian MCP server** into the Claude agents
+(see `mcp.jira.example.json`). The current provider-agnostic client
+(`src/agents/model.ts`) is a plain OpenAI-compatible chat backend and does not
+drive MCP tools; all evidence is passed inline in the prompts.
 
 ## Security notes
 

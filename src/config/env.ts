@@ -9,7 +9,9 @@ const boolish = (def: "0" | "1") =>
 const schema = z.object({
   APP_BASE_URL: z.string().default("https://www.saucedemo.com"),
 
-  ANTHROPIC_API_KEY: z.string().default(""),
+  LLM_API_KEY: z.string().default(""),
+  LLM_BASE_URL: z.string().default("https://openrouter.ai/api/v1"),
+  LLM_MODEL: z.string().default("deepseek/deepseek-chat:free"),
   CLAUDE_MODEL: z.string().default("sonnet"),
 
   JIRA_BASE_URL: z.string().default(""),
@@ -52,10 +54,10 @@ export function assertJiraConfigured(): void {
   }
 }
 
-export function assertClaudeConfigured(): void {
+export function assertModelConfigured(): void {
   if (config.DRY_RUN) return;
-  if (!config.ANTHROPIC_API_KEY) {
-    throw new Error("ANTHROPIC_API_KEY is not set. Add it to .env or use DRY_RUN=1 to try the pipeline.");
+  if (!config.LLM_API_KEY) {
+    throw new Error("LLM_API_KEY is not set. Add it to .env or use DRY_RUN=1 to try the pipeline.");
   }
 }
 

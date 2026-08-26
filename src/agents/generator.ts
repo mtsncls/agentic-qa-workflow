@@ -1,4 +1,4 @@
-import { askClaude } from "./claude";
+import { askModel } from "./model";
 import { log } from "../utils/logger";
 import type { TestPlan } from "./planner";
 
@@ -38,7 +38,7 @@ export async function generateMissingTests(plan: TestPlan): Promise<GeneratedTes
       "Strategy context: " + plan.strategy,
     ].join("\n");
 
-    await askClaude(prompt, {
+    await askModel(prompt, {
       system: SYSTEM,
       allowedTools: ["Read", "Write", "Glob", "Grep"],
       permissionMode: "acceptEdits",
