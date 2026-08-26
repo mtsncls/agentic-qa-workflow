@@ -20,6 +20,8 @@ jobs:
   aggregate-and-deploy:
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -35,13 +37,10 @@ jobs:
       # drop it under artifacts/ so `npm run report` aggregates it (with its
       # business-risk tags + per-test results) into the committed history.
       # The committed history stays the source of truth; this just refreshes it.
+      # (gh run download is used instead of download-artifact because the latter
+      # rejects the run-id + name combination for cross-run downloads here.)
       - name: Download agentic run manifest from CI
-        uses: actions/download-artifact@v4
-        with:
-          run-id: ${{ github.event.workflow_run.id }}
-          name: agentic-run-manifest
-          path: manifest-download
-          if-no-files-found: ignore
+        run: gh run download "${{ github.event.workflow_run.id }}" --name agentic-run-manifest --dir manifest-download || echo "no manifest artifact for this run"
 
       - name: Stage manifest for aggregation
         run: |
@@ -67,12 +66,7 @@ jobs:
 
       # ── Allure report (from the CI run's test artifacts) ───────────────
       - name: Download Allure results from CI run
-        uses: actions/download-artifact@v4
-        with:
-          run-id: ${{ github.event.workflow_run.id }}
-          name: playwright-artifacts-chromium
-          path: allure-download
-          if-no-files-found: ignore
+        run: gh run download "${{ github.event.workflow_run.id }}" --name playwright-artifacts-chromium --dir allure-download || echo "no allure artifact for this run"
 
       - name: Set up Java (Allure CLI needs a JRE)
         if: ${{ hashFiles('allure-download/allure-results/*.json') != '' }}

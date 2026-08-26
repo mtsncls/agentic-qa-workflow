@@ -1,0 +1,43 @@
+name: CI failure analyzer
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: "CI run id to analyze (defaults to the triggering run)"
+        required: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  actions: read
+
+jobs:
+  analyze:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      RUN_ID: ${{ github.event.workflow_run.id || github.event.inputs.run_id }}
+      REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm ci
+
+      - name: Capture failed logs
+        run: gh run view "$RUN_ID" --log-failed > failed.log || echo "no logs captured"
+
+      - name: Analyze failure and act (fix PR or notify)
+        run: npx tsx src/ci/failure-analyzer.ts
