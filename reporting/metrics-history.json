@@ -310,5 +310,44 @@
     },
     "avgConfidence": 0.85,
     "bugsCreated": 1
+  },
+  {
+    "runId": "pipeline-QA-101-1787729140513",
+    "ticket": "QA-101",
+    "issueUrl": "mock://jira/browse/QA-101",
+    "startedAt": "2026-08-26T07:25:40.513Z",
+    "finishedAt": "2026-08-26T07:25:46.880Z",
+    "durationMs": 6367,
+    "tests": {
+      "passed": 0,
+      "failed": 8,
+      "flaky": 0,
+      "skipped": 0,
+      "total": 8
+    },
+    "coverage": {
+      "total": 4,
+      "covered": 4,
+      "missing": 0
+    },
+    "generatedSpecs": 0,
+    "decisions": {
+      "total": 8,
+      "byAction": {
+        "none": 0,
+        "retry": 0,
+        "create_bug": 0,
+        "comment": 8,
+        "escalate": 0
+      }
+    },
+    "classifications": {
+      "product_bug": 0,
+      "flaky": 0,
+      "test_issue": 8,
+      "environment": 0
+    },
+    "avgConfidence": 0.5,
+    "bugsCreated": 0
   }
 ]
