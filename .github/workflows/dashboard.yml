@@ -31,11 +31,29 @@ jobs:
 
       - run: npm ci
 
+      # Pull the agentic pipeline's manifest produced by the CI smoke run and
+      # drop it under artifacts/ so `npm run report` aggregates it (with its
+      # business-risk tags + per-test results) into the committed history.
+      # The committed history stays the source of truth; this just refreshes it.
+      - name: Download agentic run manifest from CI
+        uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ github.event.workflow_run.id }}
+          name: agentic-run-manifest
+          path: manifest-download
+          if-no-files-found: ignore
+
+      - name: Stage manifest for aggregation
+        run: |
+          if [ -f manifest-download/manifest.json ]; then
+            mkdir -p artifacts/ci-smoke
+            cp manifest-download/manifest.json artifacts/ci-smoke/manifest.json
+          fi
+
       # Deploys the committed reporting/metrics-history.json. `npm run report`
-      # merges it with any manifest.json present under artifacts/ (e.g. from a
-      # real pipeline run downloaded as a CI artifact) on a last-write-wins
-      # basis, so the committed history stays the source of truth. No smoke
-      # run is generated here.
+      # merges it with any manifest.json present under artifacts/ (e.g. the CI
+      # smoke run downloaded above) on a last-write-wins basis, so the committed
+      # history stays the source of truth. No smoke run is generated here.
       - name: Aggregate metrics
         run: npm run report
 

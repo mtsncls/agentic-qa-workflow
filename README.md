@@ -86,6 +86,8 @@ npm run lint            # ESLint (includes Playwright rules)
 npm run typecheck       # TypeScript
 npm run test:e2e        # local E2E suite (chromium + HTML/Allure report)
 npm run allure:serve    # generates and opens the Allure report
+# Tag tests by business risk (see src/risk.ts) so the dashboard rolls up per area:
+#   test('...', { tag: ['@auth', '@critical'] }, ...)  or  - [auth][pii] in Jira AC text
 MOCK_JIRA=1 DRY_RUN=1 npm run qa -- run -t QA-101   # pipeline without credentials
 ```
 
@@ -104,8 +106,8 @@ automatically.
 
 | Report | URL |
 |---|---|
-| Agentic quality dashboard (KPIs, decision/classification trends) | `https://mtsncls.github.io/agentic-qa-workflow/` |
-| Allure execution report (steps, retries, attachments) | `https://mtsncls.github.io/agentic-qa-workflow/allure/` |
+| Agentic quality dashboard (KPIs, decision/classification trends) | [agentic-qa-workflow](https://mtsncls.github.io/agentic-qa-workflow/) |
+| Allure execution report (steps, retries, attachments) | [agentic-qa-workflow/allure](https://mtsncls.github.io/agentic-qa-workflow/allure/) |
 
 Local preview:
 

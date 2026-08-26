@@ -25,6 +25,7 @@ export interface TestResult {
   errors: string[];
   attachments: { name: string; path: string; type: string }[];
   retries: number;
+  tags?: string[];
 }
 
 const SYSTEM = `You are an agentic SDET specialized in diagnosing E2E failures with Playwright.

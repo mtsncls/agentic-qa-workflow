@@ -4,7 +4,7 @@ const STANDARD_USER = process.env.STANDARD_USER ?? "standard_user";
 const COMMON_PASSWORD = process.env.COMMON_PASSWORD ?? "secret_sauce";
 
 /** Full purchase flow: cart → checkout → confirmation. */
-test.describe("Checkout", () => {
+test.describe("Checkout", { tag: ["@checkout", "@payment", "@revenue", "@critical"] }, () => {
   test("complete checkout flow shows confirmation", async ({ page, pm }) => {
     await pm.onLoginPage().goto();
     await pm.onLoginPage().login(STANDARD_USER, COMMON_PASSWORD);

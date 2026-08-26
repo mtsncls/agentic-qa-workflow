@@ -8,7 +8,7 @@ const COMMON_PASSWORD = process.env.COMMON_PASSWORD ?? "secret_sauce";
  * AC-2: locked-out user sees an error message.
  * AC-3: invalid credentials show an error without accessing the inventory.
  */
-test.describe("Authentication", () => {
+test.describe("Authentication", { tag: ["@auth", "@critical", "@pii"] }, () => {
   test("successful login redirects to inventory", async ({ page, pm }) => {
     await pm.onLoginPage().goto();
     await pm.onLoginPage().login(STANDARD_USER, COMMON_PASSWORD);

@@ -5,6 +5,7 @@ import { getJira } from "../jira";
 import { extractCriteria, type AcceptanceCriterion } from "../jira/acceptance";
 import { postRunComment } from "../jira/reporter";
 import { listSpecs, runPlaywright, type RunReport } from "../playwright/runner";
+import type { TestResult } from "../agents/analyst";
 import { planTesting, type TestPlan } from "../agents/planner";
 import { generateMissingTests } from "../agents/generator";
 import { handleFailures, type Decision } from "../decisions/engine";
@@ -22,7 +23,13 @@ export interface PipelineSummary {
   criteria: AcceptanceCriterion[];
   plan: TestPlan | null;
   generated: string[];
-  run: Pick<RunReport, "startedAt" | "finishedAt" | "outputDir" | "stats">;
+  run: {
+    startedAt: string;
+    finishedAt: string;
+    outputDir: string;
+    stats: RunReport["stats"];
+    results: { title: string; file: string; status: TestResult["status"]; tags: string[] }[];
+  };
   decisions: Decision[];
   bugsCreated: string[];
   manifestPath: string;
@@ -130,7 +137,18 @@ export async function runPipeline(opts: PipelineOptions): Promise<PipelineSummar
     criteria,
     plan,
     generated: generatedFiles,
-    run: { startedAt: run.startedAt, finishedAt: run.finishedAt, outputDir: run.outputDir, stats: run.stats },
+    run: {
+      startedAt: run.startedAt,
+      finishedAt: run.finishedAt,
+      outputDir: run.outputDir,
+      stats: run.stats,
+      results: run.results.map((r) => ({
+        title: r.title,
+        file: r.file,
+        status: r.status,
+        tags: r.tags ?? [],
+      })),
+    },
     decisions,
     bugsCreated,
     manifestPath: "",

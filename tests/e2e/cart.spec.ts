@@ -15,7 +15,7 @@ test.beforeEach(async ({ page, pm }) => {
  * AC-4 (cart): add products to the cart and view them.
  * AC-5 (session): log out from the sidebar menu.
  */
-test.describe("Shopping cart", () => {
+test.describe("Shopping cart", { tag: ["@cart", "@revenue"] }, () => {
   test("added product appears in cart with correct badge", async ({ page, pm }) => {
     const products = pm.onProductsPage();
 

@@ -33,6 +33,30 @@ export function listSpecs(dir = "tests/e2e"): { file: string; title: string }[] 
   return out;
 }
 
+/**
+ * Extract business-risk tags declared on a spec file via Playwright's `tag`
+ * metadata, e.g. `test('...', { tag: ['@auth', '@critical'] }, ...)` or
+ * `test.describe('...', { tag: ['@checkout'] }, ...)`. Tags are read only from
+ * `tag: [...]` metadata (not from stray `@word` tokens like an `@playwright`
+ * import), so the taxonomy stays meaningful. Returns normalized (lowercased,
+ * no leading '@') tags.
+ */
+export function collectSpecTags(file: string): string[] {
+  const tags = new Set<string>();
+  try {
+    const src = fs.readFileSync(file, "utf8");
+    for (const m of src.matchAll(/tag\s*:\s*\[([^\]]*)\]/g)) {
+      for (const t of m[1].matchAll(/['"`]([^'"`]+)['"`]/g)) {
+        const n = t[1].replace(/^@/, "").trim().toLowerCase();
+        if (n) tags.add(n);
+      }
+    }
+  } catch {
+    // file unreadable: treat as no tags
+  }
+  return [...tags];
+}
+
 interface PwAttachment {
   name?: string;
   contentType?: string;
@@ -52,6 +76,7 @@ interface PwSpec {
   file?: string;
   line?: number;
   ok?: boolean;
+  tags?: string[];
   tests?: {
     results?: PwResult[];
     projectName?: string;
@@ -158,6 +183,7 @@ export async function runPlaywright(
       errors,
       attachments,
       retries: Math.max(0, attempts.length - 1),
+      tags: spec.tags ?? [],
     });
     }
   }

@@ -7,7 +7,7 @@ import { test, expect } from "@playwright/test";
  */
 const SIMULATE_REGRESSION = /^(1|true|yes)$/i.test(process.env.DEMO_FAIL ?? "");
 
-test("checkout overview shows order total", async ({ page }) => {
+test("checkout overview shows order total", { tag: ["@regression", "@checkout"] }, async ({ page }) => {
   test.skip(!SIMULATE_REGRESSION, "Set DEMO_FAIL=1 to simulate a product regression");
 
   await page.goto("/");

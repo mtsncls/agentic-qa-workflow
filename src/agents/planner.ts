@@ -3,6 +3,8 @@ import type { AcceptanceCriterion } from "../jira/acceptance";
 import { askClaude } from "./claude";
 import { extractJson } from "../utils/json";
 import { config, } from "../config/env";
+import { collectSpecTags } from "../playwright/runner";
+import { mergeTags } from "../risk";
 
 export interface SpecInventoryItem {
   file: string;
@@ -13,6 +15,7 @@ const coverageSchema = z.object({
   criterion: z.string(),
   status: z.enum(["covered", "missing"]),
   matchedTest: z.string().optional(),
+  tags: z.array(z.string()).default([]),
 });
 
 export const testPlanSchema = z.object({
@@ -65,17 +68,51 @@ function buildPrompt(
   ].join("\n");
 }
 
+/**
+ * Merge Jira criterion tags with the matched spec file's Playwright tags so a
+ * single coverage entry carries the full business-risk picture.
+ */
+function enrichCoverageWithTags(
+  coverage: TestPlan["coverage"],
+  criteria: AcceptanceCriterion[],
+  inventory: SpecInventoryItem[]
+): TestPlan["coverage"] {
+  const critByText = new Map(criteria.map((c) => [c.text, c]));
+  const fileByTitle = new Map(inventory.map((i) => [i.title, i.file]));
+  const cache = new Map<string, string[]>();
+  const fileTags = (file?: string): string[] => {
+    if (!file) return [];
+    if (!cache.has(file)) cache.set(file, collectSpecTags(file));
+    return cache.get(file)!;
+  };
+  return coverage.map((c) => {
+    const crit =
+      critByText.get(c.criterion) ??
+      criteria.find((x) => c.criterion.includes(x.text) || x.text.includes(c.criterion));
+    const file = c.matchedTest?.endsWith(".spec.ts")
+      ? c.matchedTest
+      : fileByTitle.get(c.matchedTest ?? "");
+    return { ...c, tags: mergeTags(c.tags, crit?.tags, fileTags(file)) };
+  });
+}
+
 /** Deterministic planner for DRY_RUN: covers everything with existing specs. */
 function dryRunPlan(ticket: string, criteria: AcceptanceCriterion[], inventory: SpecInventoryItem[]): TestPlan {
   const files = [...new Set(inventory.map((i) => i.file))];
-  return {
-    ticket,
-    strategy: "[dry-run] Run the existing E2E suite against all criteria.",
-    coverage: criteria.map((c) => ({
+  const coverage = enrichCoverageWithTags(
+    criteria.map((c) => ({
       criterion: c.text,
       status: "covered" as const,
       matchedTest: files[0],
+      tags: [] as string[],
     })),
+    criteria,
+    inventory
+  );
+  return {
+    ticket,
+    strategy: "[dry-run] Run the existing E2E suite against all criteria.",
+    coverage,
     specsToRun: files,
     generate: [],
     notes: "Plan generated in DRY_RUN mode (no LLM).",
@@ -95,5 +132,9 @@ export async function planTesting(
     maxTurns: 2,
   });
   const plan = extractJson(raw, testPlanSchema);
-  return { ...plan, ticket: ticketKey };
+  return {
+    ...plan,
+    ticket: ticketKey,
+    coverage: enrichCoverageWithTags(plan.coverage, criteria, inventory),
+  };
 }

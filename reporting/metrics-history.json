@@ -36,7 +36,8 @@
       "environment": 0
     },
     "avgConfidence": null,
-    "bugsCreated": 0
+    "bugsCreated": 0,
+    "risk": {}
   },
   {
     "runId": "pipeline-QA-101-1787579717097",
@@ -75,7 +76,8 @@
       "environment": 0
     },
     "avgConfidence": null,
-    "bugsCreated": 0
+    "bugsCreated": 0,
+    "risk": {}
   },
   {
     "runId": "pipeline-QA-101-1787579740377",
@@ -114,7 +116,8 @@
       "environment": 1
     },
     "avgConfidence": 0.6,
-    "bugsCreated": 0
+    "bugsCreated": 0,
+    "risk": {}
   },
   {
     "runId": "pipeline-QA-101-1787579814715",
@@ -153,7 +156,8 @@
       "environment": 0
     },
     "avgConfidence": 0.85,
-    "bugsCreated": 1
+    "bugsCreated": 1,
+    "risk": {}
   },
   {
     "runId": "pipeline-QA-101-1787582822465",
@@ -192,7 +196,8 @@
       "environment": 0
     },
     "avgConfidence": null,
-    "bugsCreated": 0
+    "bugsCreated": 0,
+    "risk": {}
   },
   {
     "runId": "pipeline-QA-101-1787582842645",
@@ -231,7 +236,8 @@
       "environment": 0
     },
     "avgConfidence": 0.85,
-    "bugsCreated": 1
+    "bugsCreated": 1,
+    "risk": {}
   },
   {
     "runId": "pipeline-QA-101-1787599280554",
@@ -270,7 +276,8 @@
       "environment": 0
     },
     "avgConfidence": null,
-    "bugsCreated": 0
+    "bugsCreated": 0,
+    "risk": {}
   },
   {
     "runId": "pipeline-QA-101-1787599313610",
@@ -309,7 +316,8 @@
       "environment": 0
     },
     "avgConfidence": 0.85,
-    "bugsCreated": 1
+    "bugsCreated": 1,
+    "risk": {}
   },
   {
     "runId": "pipeline-QA-101-1787729140513",

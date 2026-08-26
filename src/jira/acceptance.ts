@@ -1,10 +1,12 @@
 import { adfToText } from "./adf";
 import type { JiraIssue } from "./types";
 import { config } from "../config/env";
+import { parseRiskTags, stripTagMarkers } from "../risk";
 
 export interface AcceptanceCriterion {
   index: number;
   text: string;
+  tags: string[];
 }
 
 /** Extracts the raw text of the field configured as acceptance criteria. */
@@ -39,5 +41,8 @@ export function extractCriteria(issue: JiraIssue): AcceptanceCriterion[] {
   return candidates
     .map((l) => l.replace(/^\s*(?:[-*•]|\d+[.)])\s*/, "").trim())
     .filter(Boolean)
-    .map((text, i) => ({ index: i + 1, text }));
+    .map((raw, i) => {
+      const tags = parseRiskTags(raw);
+      return { index: i + 1, text: stripTagMarkers(raw), tags };
+    });
 }

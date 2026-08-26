@@ -21,12 +21,14 @@ export interface RunInfo {
   finishedAt: string;
   outputDir: string;
   stats: RunStats;
+  results?: { title: string; file: string; status: TestStatus; tags: string[] }[];
 }
 
 export interface CoverageEntry {
   criterion: string;
   status: "covered" | "missing";
   matchedTest?: string;
+  tags?: string[];
 }
 
 export interface TestPlan {
@@ -102,4 +104,17 @@ export interface RunMetrics {
   classifications: Record<Classification, number>;
   avgConfidence: number | null;
   bugsCreated: number;
+  /** Per business-risk-tag rollup (coverage, test outcomes, bugs, confidence). */
+  risk: Record<string, RiskMetric>;
+}
+
+export interface RiskMetric {
+  criteria: number;
+  covered: number;
+  missing: number;
+  passed: number;
+  failed: number;
+  flaky: number;
+  bugs: number;
+  avgConfidence: number | null;
 }

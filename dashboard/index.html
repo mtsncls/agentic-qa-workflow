@@ -148,6 +148,27 @@
     </div>
 
     <div class="card">
+      <h2>Business risk coverage</h2>
+      <div class="chart-wrap" style="height: 240px;">
+        <canvas id="riskChart" role="img" aria-label="Stacked bar chart of passed, failed and flaky tests per business-risk tag"></canvas>
+      </div>
+      <div class="table-scroll" style="margin-top: 12px;">
+        <table>
+          <thead>
+            <tr>
+              <th>Risk tag</th>
+              <th>Criteria (cov/total)</th>
+              <th>Tests (P/F/Flaky)</th>
+              <th>Bugs</th>
+              <th>Avg confidence</th>
+            </tr>
+          </thead>
+          <tbody id="riskTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
       <h2>Recent runs</h2>
       <div class="table-scroll">
         <table>
@@ -322,6 +343,58 @@ function renderTable(history) {
   document.getElementById('runsTable').innerHTML = rows.join('') || '<tr><td colspan="7">No runs yet.</td></tr>';
 }
 
+function renderRiskChart(history) {
+  const totals = {};
+  history.forEach(r => {
+    for (const [tag, m] of Object.entries(r.risk || {})) {
+      const t = totals[tag] || (totals[tag] = { passed: 0, failed: 0, flaky: 0 });
+      t.passed += m.passed; t.failed += m.failed; t.flaky += m.flaky;
+    }
+  });
+  const labels = Object.keys(totals).sort();
+  const ctx = document.getElementById('riskChart');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Passed', data: labels.map(l => totals[l].passed), backgroundColor: '#2fbf71', stack: 's' },
+        { label: 'Failed', data: labels.map(l => totals[l].failed), backgroundColor: '#e0553f', stack: 's' },
+        { label: 'Flaky', data: labels.map(l => totals[l].flaky), backgroundColor: '#e0a52d', stack: 's' },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } } },
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+
+function renderRiskTable(history) {
+  const agg = {};
+  history.forEach(r => {
+    for (const [tag, m] of Object.entries(r.risk || {})) {
+      const a = agg[tag] || (agg[tag] = { criteria: 0, covered: 0, passed: 0, failed: 0, flaky: 0, bugs: 0, confSum: 0, confCount: 0 });
+      a.criteria += m.criteria; a.covered += m.covered;
+      a.passed += m.passed; a.failed += m.failed; a.flaky += m.flaky; a.bugs += m.bugs;
+      if (m.avgConfidence != null) { a.confSum += m.avgConfidence; a.confCount += 1; }
+    }
+  });
+  const rows = Object.keys(agg).sort().map(tag => {
+    const a = agg[tag];
+    const conf = a.confCount ? (a.confSum / a.confCount).toFixed(2) : '—';
+    return '<tr>' +
+      '<td>' + tag + '</td>' +
+      '<td>' + a.covered + '/' + a.criteria + '</td>' +
+      '<td>' + a.passed + '/' + a.failed + '/' + a.flaky + '</td>' +
+      '<td>' + a.bugs + '</td>' +
+      '<td>' + conf + '</td>' +
+      '</tr>';
+  });
+  document.getElementById('riskTable').innerHTML = rows.join('') || '<tr><td colspan="5">No tagged runs yet.</td></tr>';
+}
+
 (async function init() {
   const history = await loadHistory();
   if (!history || !history.length) { renderEmpty(); return; }
@@ -330,6 +403,8 @@ function renderTable(history) {
   renderConfidenceChart(history);
   renderActionsChart(history);
   renderClassChart(history);
+  renderRiskChart(history);
+  renderRiskTable(history);
   renderTable(history);
 })();
 </script>
