@@ -38,6 +38,6 @@
     "eslint-plugin-playwright": "^2.11.0",
     "prettier": "^3.9.6",
     "tsx": "^4.23.12",
-    "typescript": "~5.9.0"
+    "typescript": "~7.0.2"
   }
 }
