@@ -95,11 +95,11 @@ function applyFix(v: Verdict): void {
 
   const body = `## Automated CI failure analysis\n\n**Run:** ${runId}\n**Confidence:** ${v.confidence}\n\n${v.summary}\n\n${v.rationale}\n\n[View run](${runUrl()})`;
   fs.writeFileSync("/tmp/pr_body.md", body);
-  sh(
-    `gh pr create --title "fix(ci): ${v.summary.slice(0, 60)}" --body-file /tmp/pr_body.md --base main`,
-    true
+  const prOut = sh(
+    `gh pr create --title "fix(ci): ${v.summary.slice(0, 60)}" --body-file /tmp/pr_body.md --base main`
   );
-  console.log(`[analyzer] opened PR from run ${runId}`);
+  const prUrl = (prOut.match(/https?:\/\/\S+/) ?? [prOut.trim()])[0];
+  console.log(`[analyzer] opened PR from run ${runId}: ${prUrl}`);
 }
 
 async function main(): Promise<void> {
