@@ -30,13 +30,11 @@ jobs:
 
       - run: npm ci
 
-      # Regenerates a run so there's a fresh manifest.json to aggregate.
-      # Swap this for downloading the real CI run's artifacts/ dir instead
-      # if you'd rather aggregate the actual pipeline run than a smoke run.
-      - name: Produce a manifest to aggregate
-        run: MOCK_JIRA=1 DRY_RUN=1 npm run qa -- run -t QA-101
-        continue-on-error: true
-
+      # Deploys the committed reporting/metrics-history.json. `npm run report`
+      # merges it with any manifest.json present under artifacts/ (e.g. from a
+      # real pipeline run downloaded as a CI artifact) on a last-write-wins
+      # basis, so the committed history stays the source of truth. No smoke
+      # run is generated here.
       - name: Aggregate metrics
         run: npm run report
 
