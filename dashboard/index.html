@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Agentic QA Workflow — Quality Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --surface: #121722;
+    --surface-2: #1a2130;
+    --border: #262e3f;
+    --text: #e8ecf3;
+    --text-secondary: #9aa4b8;
+    --text-muted: #6b7488;
+    --accent: #4a8fe7;
+    --success: #2fbf71;
+    --warning: #e0a52d;
+    --danger: #e0553f;
+    --purple: #8b7ee8;
+  }
+  [data-theme="light"] {
+    --bg: #f5f6f8;
+    --surface: #ffffff;
+    --surface-2: #eef1f6;
+    --border: #dde1e8;
+    --text: #14171f;
+    --text-secondary: #4c5566;
+    --text-muted: #8891a3;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding: 2rem 1.5rem 4rem;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.75rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  h1 { font-size: 20px; font-weight: 600; margin: 0 0 4px; }
+  .subtitle { color: var(--text-secondary); font-size: 13px; margin: 0; }
+  #theme-toggle {
+    background: var(--surface); border: 1px solid var(--border); color: var(--text-secondary);
+    border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer;
+  }
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 1.75rem;
+  }
+  .kpi {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .kpi .label { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
+  .kpi .value { font-size: 24px; font-weight: 600; }
+  .kpi .sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  @media (max-width: 780px) { .grid-2 { grid-template-columns: 1fr; } }
+  .grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  @media (max-width: 780px) { .grid-3 { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .card h2 { font-size: 13px; font-weight: 600; margin: 0 0 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.03em; }
+  .chart-wrap { position: relative; width: 100%; }
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 8px; font-size: 11px; color: var(--text-secondary); }
+  .legend span.dot { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th { color: var(--text-muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.02em; }
+  td a { color: var(--accent); text-decoration: none; }
+  td a:hover { text-decoration: underline; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; }
+  .badge-bug { background: rgba(224,85,63,0.15); color: var(--danger); }
+  .badge-flaky { background: rgba(224,165,45,0.15); color: var(--warning); }
+  .badge-ok { background: rgba(47,191,113,0.15); color: var(--success); }
+  .empty { color: var(--text-muted); font-size: 13px; padding: 2rem 0; text-align: center; }
+  .table-scroll { overflow-x: auto; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Agentic QA Workflow — quality dashboard</h1>
+      <p class="subtitle">Test health and agentic decision metrics, aggregated from <code>reporting/metrics-history.json</code></p>
+    </div>
+    <button id="theme-toggle" onclick="toggleTheme()">Light mode</button>
+  </header>
+
+  <div id="content">
+    <div class="kpi-grid" id="kpis"></div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h2>Test results per run</h2>
+        <div class="chart-wrap" style="height: 260px;">
+          <canvas id="testsChart" role="img" aria-label="Stacked bar chart of passed, failed, and flaky tests per pipeline run"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Analyst confidence trend</h2>
+        <div class="chart-wrap" style="height: 260px;">
+          <canvas id="confidenceChart" role="img" aria-label="Line chart of average analyst confidence score per run"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-3">
+      <div class="card">
+        <h2>Decision engine actions</h2>
+        <div class="chart-wrap" style="height: 220px;">
+          <canvas id="actionsChart" role="img" aria-label="Doughnut chart of decision engine actions: retry, create bug, comment, escalate"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Failure classifications</h2>
+        <div class="chart-wrap" style="height: 220px;">
+          <canvas id="classChart" role="img" aria-label="Doughnut chart of failure classifications: product bug, flaky, test issue, environment"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Recent runs</h2>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Ticket</th>
+              <th>Date</th>
+              <th>Tests</th>
+              <th>Coverage</th>
+              <th>Decisions</th>
+              <th>Bugs</th>
+              <th>Avg confidence</th>
+            </tr>
+          </thead>
+          <tbody id="runsTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleTheme() {
+  const html = document.documentElement;
+  const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  document.getElementById('theme-toggle').textContent = next === 'dark' ? 'Light mode' : 'Dark mode';
+}
+
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return isNaN(d) ? '—' : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: '2-digit' });
+}
+
+function pct(n, d) { return d ? Math.round((n / d) * 100) : 0; }
+
+async function loadHistory() {
+  const candidates = ['./metrics-history.json', '../reporting/metrics-history.json', './reporting/metrics-history.json'];
+  for (const url of candidates) {
+    try {
+      const res = await fetch(url, { cache: 'no-store' });
+      if (res.ok) return await res.json();
+    } catch (e) { /* try next */ }
+  }
+  return null;
+}
+
+function renderEmpty() {
+  document.getElementById('content').innerHTML =
+    '<div class="empty">No runs yet. Run <code>npm run report</code> after a pipeline run to populate reporting/metrics-history.json.</div>';
+}
+
+function renderKpis(history) {
+  const totals = history.reduce((acc, r) => {
+    acc.total += r.tests.total;
+    acc.passed += r.tests.passed;
+    acc.failed += r.tests.failed;
+    acc.flaky += r.tests.flaky;
+    acc.bugs += r.bugsCreated;
+    acc.decisions += r.decisions.total;
+    return acc;
+  }, { total: 0, passed: 0, failed: 0, flaky: 0, bugs: 0, decisions: 0 });
+
+  const confidences = history.map(r => r.avgConfidence).filter(c => c != null);
+  const avgConf = confidences.length ? (confidences.reduce((a, b) => a + b, 0) / confidences.length) : null;
+
+  const kpis = [
+    { label: 'Runs tracked', value: history.length },
+    { label: 'Pass rate', value: pct(totals.passed, totals.total) + '%', sub: totals.passed + '/' + totals.total + ' tests' },
+    { label: 'Flaky rate', value: pct(totals.flaky, totals.total) + '%', sub: totals.flaky + ' flaky tests' },
+    { label: 'Bugs auto-created', value: totals.bugs, sub: totals.decisions + ' decisions made' },
+    { label: 'Avg analyst confidence', value: avgConf != null ? avgConf.toFixed(2) : '—' },
+  ];
+
+  document.getElementById('kpis').innerHTML = kpis.map(k =>
+    '<div class="kpi"><div class="label">' + k.label + '</div><div class="value">' + k.value + '</div>' +
+    (k.sub ? '<div class="sub">' + k.sub + '</div>' : '') + '</div>'
+  ).join('');
+}
+
+function renderTestsChart(history) {
+  const ctx = document.getElementById('testsChart');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: history.map(r => fmtDate(r.startedAt)),
+      datasets: [
+        { label: 'Passed', data: history.map(r => r.tests.passed), backgroundColor: '#2fbf71', stack: 's' },
+        { label: 'Failed', data: history.map(r => r.tests.failed), backgroundColor: '#e0553f', stack: 's' },
+        { label: 'Flaky', data: history.map(r => r.tests.flaky), backgroundColor: '#e0a52d', stack: 's' },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } } },
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+
+function renderConfidenceChart(history) {
+  const withConf = history.filter(r => r.avgConfidence != null);
+  const ctx = document.getElementById('confidenceChart');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: withConf.map(r => fmtDate(r.startedAt)),
+      datasets: [{
+        label: 'Avg confidence',
+        data: withConf.map(r => r.avgConfidence),
+        borderColor: '#4a8fe7',
+        backgroundColor: 'rgba(74,143,231,0.12)',
+        fill: true,
+        tension: 0.25,
+        pointRadius: 3,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: { y: { min: 0, max: 1, grid: { color: 'rgba(120,130,150,0.12)' } }, x: { grid: { display: false } } },
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+
+function renderActionsChart(history) {
+  const totals = { retry: 0, create_bug: 0, comment: 0, escalate: 0, none: 0 };
+  history.forEach(r => { for (const k in totals) totals[k] += (r.decisions.byAction[k] || 0); });
+  const ctx = document.getElementById('actionsChart');
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Retry', 'Create bug', 'Comment', 'Escalate', 'None'],
+      datasets: [{ data: [totals.retry, totals.create_bug, totals.comment, totals.escalate, totals.none],
+        backgroundColor: ['#e0a52d', '#e0553f', '#4a8fe7', '#8b7ee8', '#3a4256'] }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } } } }
+  });
+}
+
+function renderClassChart(history) {
+  const totals = { product_bug: 0, flaky: 0, test_issue: 0, environment: 0 };
+  history.forEach(r => { for (const k in totals) totals[k] += (r.classifications[k] || 0); });
+  const ctx = document.getElementById('classChart');
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Product bug', 'Flaky', 'Test issue', 'Environment'],
+      datasets: [{ data: [totals.product_bug, totals.flaky, totals.test_issue, totals.environment],
+        backgroundColor: ['#e0553f', '#e0a52d', '#4a8fe7', '#8b7ee8'] }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } } } }
+  });
+}
+
+function renderTable(history) {
+  const rows = [...history].reverse().slice(0, 15).map(r => {
+    const badges = [];
+    if (r.bugsCreated) badges.push('<span class="badge badge-bug">' + r.bugsCreated + ' bug' + (r.bugsCreated > 1 ? 's' : '') + '</span>');
+    if (r.classifications.flaky) badges.push('<span class="badge badge-flaky">' + r.classifications.flaky + ' flaky</span>');
+    if (!r.bugsCreated && !r.classifications.flaky && r.tests.failed === 0) badges.push('<span class="badge badge-ok">clean</span>');
+    return '<tr>' +
+      '<td><a href="' + r.issueUrl + '" target="_blank" rel="noopener">' + r.ticket + '</a></td>' +
+      '<td>' + fmtDate(r.startedAt) + '</td>' +
+      '<td>' + r.tests.passed + '/' + r.tests.total + '</td>' +
+      '<td>' + r.coverage.covered + '/' + r.coverage.total + '</td>' +
+      '<td>' + r.decisions.total + ' ' + badges.join(' ') + '</td>' +
+      '<td>' + r.bugsCreated + '</td>' +
+      '<td>' + (r.avgConfidence != null ? r.avgConfidence.toFixed(2) : '—') + '</td>' +
+      '</tr>';
+  });
+  document.getElementById('runsTable').innerHTML = rows.join('') || '<tr><td colspan="7">No runs yet.</td></tr>';
+}
+
+(async function init() {
+  const history = await loadHistory();
+  if (!history || !history.length) { renderEmpty(); return; }
+  renderKpis(history);
+  renderTestsChart(history);
+  renderConfidenceChart(history);
+  renderActionsChart(history);
+  renderClassChart(history);
+  renderTable(history);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,314 @@
+[
+  {
+    "runId": "pipeline-QA-101-1787579670323",
+    "ticket": "QA-101",
+    "issueUrl": "mock://jira/browse/QA-101",
+    "startedAt": "2026-08-24T13:54:30.323Z",
+    "finishedAt": "2026-08-24T13:54:37.710Z",
+    "durationMs": 7387,
+    "tests": {
+      "passed": 2,
+      "failed": 0,
+      "flaky": 0,
+      "skipped": 0,
+      "total": 2
+    },
+    "coverage": {
+      "total": 4,
+      "covered": 4,
+      "missing": 0
+    },
+    "generatedSpecs": 0,
+    "decisions": {
+      "total": 0,
+      "byAction": {
+        "none": 0,
+        "retry": 0,
+        "create_bug": 0,
+        "comment": 0,
+        "escalate": 0
+      }
+    },
+    "classifications": {
+      "product_bug": 0,
+      "flaky": 0,
+      "test_issue": 0,
+      "environment": 0
+    },
+    "avgConfidence": null,
+    "bugsCreated": 0
+  },
+  {
+    "runId": "pipeline-QA-101-1787579717097",
+    "ticket": "QA-101",
+    "issueUrl": "mock://jira/browse/QA-101",
+    "startedAt": "2026-08-24T13:55:17.097Z",
+    "finishedAt": "2026-08-24T13:55:22.482Z",
+    "durationMs": 5385,
+    "tests": {
+      "passed": 5,
+      "failed": 0,
+      "flaky": 0,
+      "skipped": 0,
+      "total": 5
+    },
+    "coverage": {
+      "total": 4,
+      "covered": 4,
+      "missing": 0
+    },
+    "generatedSpecs": 0,
+    "decisions": {
+      "total": 0,
+      "byAction": {
+        "none": 0,
+        "retry": 0,
+        "create_bug": 0,
+        "comment": 0,
+        "escalate": 0
+      }
+    },
+    "classifications": {
+      "product_bug": 0,
+      "flaky": 0,
+      "test_issue": 0,
+      "environment": 0
+    },
+    "avgConfidence": null,
+    "bugsCreated": 0
+  },
+  {
+    "runId": "pipeline-QA-101-1787579740377",
+    "ticket": "QA-101",
+    "issueUrl": "mock://jira/browse/QA-101",
+    "startedAt": "2026-08-24T13:55:40.377Z",
+    "finishedAt": "2026-08-24T13:55:56.679Z",
+    "durationMs": 16302,
+    "tests": {
+      "passed": 5,
+      "failed": 1,
+      "flaky": 0,
+      "skipped": 0,
+      "total": 6
+    },
+    "coverage": {
+      "total": 4,
+      "covered": 4,
+      "missing": 0
+    },
+    "generatedSpecs": 0,
+    "decisions": {
+      "total": 1,
+      "byAction": {
+        "none": 0,
+        "retry": 0,
+        "create_bug": 0,
+        "comment": 1,
+        "escalate": 0
+      }
+    },
+    "classifications": {
+      "product_bug": 0,
+      "flaky": 0,
+      "test_issue": 0,
+      "environment": 1
+    },
+    "avgConfidence": 0.6,
+    "bugsCreated": 0
+  },
+  {
+    "runId": "pipeline-QA-101-1787579814715",
+    "ticket": "QA-101",
+    "issueUrl": "mock://jira/browse/QA-101",
+    "startedAt": "2026-08-24T13:56:54.715Z",
+    "finishedAt": "2026-08-24T13:57:11.133Z",
+    "durationMs": 16418,
+    "tests": {
+      "passed": 5,
+      "failed": 1,
+      "flaky": 0,
+      "skipped": 0,
+      "total": 6
+    },
+    "coverage": {
+      "total": 4,
+      "covered": 4,
+      "missing": 0
+    },
+    "generatedSpecs": 0,
+    "decisions": {
+      "total": 1,
+      "byAction": {
+        "none": 0,
+        "retry": 0,
+        "create_bug": 1,
+        "comment": 0,
+        "escalate": 0
+      }
+    },
+    "classifications": {
+      "product_bug": 1,
+      "flaky": 0,
+      "test_issue": 0,
+      "environment": 0
+    },
+    "avgConfidence": 0.85,
+    "bugsCreated": 1
+  },
+  {
+    "runId": "pipeline-QA-101-1787582822465",
+    "ticket": "QA-101",
+    "issueUrl": "mock://jira/browse/QA-101",
+    "startedAt": "2026-08-24T14:47:02.465Z",
+    "finishedAt": "2026-08-24T14:47:09.334Z",
+    "durationMs": 6869,
+    "tests": {
+      "passed": 7,
+      "failed": 0,
+      "flaky": 0,
+      "skipped": 1,
+      "total": 8
+    },
+    "coverage": {
+      "total": 4,
+      "covered": 4,
+      "missing": 0
+    },
+    "generatedSpecs": 0,
+    "decisions": {
+      "total": 0,
+      "byAction": {
+        "none": 0,
+        "retry": 0,
+        "create_bug": 0,
+        "comment": 0,
+        "escalate": 0
+      }
+    },
+    "classifications": {
+      "product_bug": 0,
+      "flaky": 0,
+      "test_issue": 0,
+      "environment": 0
+    },
+    "avgConfidence": null,
+    "bugsCreated": 0
+  },
+  {
+    "runId": "pipeline-QA-101-1787582842645",
+    "ticket": "QA-101",
+    "issueUrl": "mock://jira/browse/QA-101",
+    "startedAt": "2026-08-24T14:47:22.645Z",
+    "finishedAt": "2026-08-24T14:47:40.376Z",
+    "durationMs": 17731,
+    "tests": {
+      "passed": 7,
+      "failed": 1,
+      "flaky": 0,
+      "skipped": 0,
+      "total": 8
+    },
+    "coverage": {
+      "total": 4,
+      "covered": 4,
+      "missing": 0
+    },
+    "generatedSpecs": 0,
+    "decisions": {
+      "total": 1,
+      "byAction": {
+        "none": 0,
+        "retry": 0,
+        "create_bug": 1,
+        "comment": 0,
+        "escalate": 0
+      }
+    },
+    "classifications": {
+      "product_bug": 1,
+      "flaky": 0,
+      "test_issue": 0,
+      "environment": 0
+    },
+    "avgConfidence": 0.85,
+    "bugsCreated": 1
+  },
+  {
+    "runId": "pipeline-QA-101-1787599280554",
+    "ticket": "QA-101",
+    "issueUrl": "mock://jira/browse/QA-101",
+    "startedAt": "2026-08-24T19:21:20.554Z",
+    "finishedAt": "2026-08-24T19:21:26.342Z",
+    "durationMs": 5788,
+    "tests": {
+      "passed": 7,
+      "failed": 0,
+      "flaky": 0,
+      "skipped": 1,
+      "total": 8
+    },
+    "coverage": {
+      "total": 4,
+      "covered": 4,
+      "missing": 0
+    },
+    "generatedSpecs": 0,
+    "decisions": {
+      "total": 0,
+      "byAction": {
+        "none": 0,
+        "retry": 0,
+        "create_bug": 0,
+        "comment": 0,
+        "escalate": 0
+      }
+    },
+    "classifications": {
+      "product_bug": 0,
+      "flaky": 0,
+      "test_issue": 0,
+      "environment": 0
+    },
+    "avgConfidence": null,
+    "bugsCreated": 0
+  },
+  {
+    "runId": "pipeline-QA-101-1787599313610",
+    "ticket": "QA-101",
+    "issueUrl": "mock://jira/browse/QA-101",
+    "startedAt": "2026-08-24T19:21:53.610Z",
+    "finishedAt": "2026-08-24T19:22:09.762Z",
+    "durationMs": 16152,
+    "tests": {
+      "passed": 7,
+      "failed": 1,
+      "flaky": 0,
+      "skipped": 0,
+      "total": 8
+    },
+    "coverage": {
+      "total": 4,
+      "covered": 4,
+      "missing": 0
+    },
+    "generatedSpecs": 0,
+    "decisions": {
+      "total": 1,
+      "byAction": {
+        "none": 0,
+        "retry": 0,
+        "create_bug": 1,
+        "comment": 0,
+        "escalate": 0
+      }
+    },
+    "classifications": {
+      "product_bug": 1,
+      "flaky": 0,
+      "test_issue": 0,
+      "environment": 0
+    },
+    "avgConfidence": 0.85,
+    "bugsCreated": 1
+  }
+]

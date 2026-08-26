@@ -1,0 +1,61 @@
+name: Quality dashboard
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: dashboard-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  aggregate-and-deploy:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm ci
+
+      # Regenerates a run so there's a fresh manifest.json to aggregate.
+      # Swap this for downloading the real CI run's artifacts/ dir instead
+      # if you'd rather aggregate the actual pipeline run than a smoke run.
+      - name: Produce a manifest to aggregate
+        run: MOCK_JIRA=1 DRY_RUN=1 npm run qa -- run -t QA-101
+        continue-on-error: true
+
+      - name: Aggregate metrics
+        run: npm run report
+
+      - name: Commit updated history
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add reporting/metrics-history.json
+          git diff --cached --quiet || git commit -m "chore: update quality metrics history [skip ci]"
+          git push
+
+      - name: Assemble dashboard for Pages
+        run: |
+          mkdir -p _site
+          cp -r dashboard/* _site/
+          cp reporting/metrics-history.json _site/metrics-history.json
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - uses: actions/deploy-pages@v4
