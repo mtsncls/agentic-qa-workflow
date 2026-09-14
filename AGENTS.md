@@ -80,3 +80,21 @@ the style. All new code must pass `npm run lint` and `npm run typecheck`.
 - Every Jira action goes through `src/jira/client.ts` (REST API v3) or its mock.
 - `MOCK_JIRA=1` and `DRY_RUN=1` allow exercising the whole flow without
   credentials or an LLM.
+
+## Coding behavior (Karpathy guidelines)
+
+These principles reduce common LLM coding mistakes. Use judgment on trivial
+tasks; they bias toward caution over speed. Load the
+`karpathy-guidelines` skill for real-world examples.
+
+1. **Think before coding** — Don't assume; state assumptions explicitly and ask
+   when uncertain. Present multiple interpretations instead of picking silently.
+   Surface tradeoffs and push back when a simpler approach exists.
+2. **Simplicity first** — Minimum code that solves the problem. No speculative
+   features, single-use abstractions, unwarranted configurability, or error
+   handling for impossible scenarios. If 200 lines could be 50, rewrite it.
+3. **Surgical changes** — Touch only what the request requires. Don't improve
+   adjacent code, comments, or formatting; match existing style. Remove orphans
+   YOUR changes created, never pre-existing dead code.
+4. **Goal-driven execution** — Define verifiable success criteria and loop until
+   verified. Write a failing test first, then make it pass; verify no regressions.
