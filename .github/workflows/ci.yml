@@ -124,3 +124,39 @@ jobs:
           path: artifacts/pipeline-QA-101-*/manifest.json
           retention-days: 30
           if-no-files-found: ignore
+
+  # Daily agentic pipeline on the schedule trigger (03:00 UTC) or manual
+  # dispatch. Runs in mock mode until Jira + an LLM are configured. To switch to
+  # real mode: define the secrets LLM_API_KEY, JIRA_BASE_URL, JIRA_EMAIL,
+  # JIRA_API_TOKEN, select the target ticket via the repo variable
+  # vars.JIRA_TICKET (defaults to QA-101), and drop MOCK_JIRA/DRY_RUN below.
+  agentic-pipeline-daily:
+    name: Agentic pipeline (daily)
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    needs: quality-gate
+    env:
+      JIRA_TICKET: ${{ vars.JIRA_TICKET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install chromium --with-deps
+
+      - name: Run agentic pipeline (mock Jira + dry-run)
+        env:
+          MOCK_JIRA: "1"
+          DRY_RUN: "1"
+        run: npm run qa -- run -t "${JIRA_TICKET:-QA-101}"
+
+      - name: Upload run manifest
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agentic-daily-manifest
+          path: artifacts/pipeline-*/manifest.json
+          retention-days: 30
+          if-no-files-found: ignore

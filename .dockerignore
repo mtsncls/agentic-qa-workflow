@@ -1,0 +1,14 @@
+node_modules/
+artifacts/
+allure-results/
+allure-report/
+test-results/
+playwright-report/
+blob-report/
+dashboard/node_modules/
+.env
+.env.local
+.git
+.github/
+*.log
+.DS_Store

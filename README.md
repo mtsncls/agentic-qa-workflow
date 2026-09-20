@@ -56,7 +56,9 @@ tests/e2e/               # E2E suite against saucedemo.com
 ├── cart.spec.ts         # Cart + logout (3 tests)
 ├── checkout.spec.ts     # Full purchase flow
 └── demo-fail.spec.ts    # Simulated failure to demonstrate bug creation
-.github/workflows/ci.yml # Lint+typecheck, chromium E2E, nightly firefox, pipeline smoke
+.github/workflows/ci.yml # Quality gate, chromium E2E, nightly firefox, pipeline smoke, daily real run
+.gitignore
+Dockerfile / .dockerignore / docker-compose.yml  # Optional containerized execution
 artifacts/<run-id>/      # Evidence: pw-report.json, screenshots, video, trace, manifest
 ```
 
@@ -79,6 +81,26 @@ cp .env.example .env       # fill in your credentials
 npm run typecheck          # sanity check
 ```
 
+## Docker (optional)
+
+Reproducible environment: the same Node + Playwright browsers + system deps used
+by CI, no local toolchain required.
+
+```bash
+docker compose build                                        # build the image
+docker compose --profile e2e run --rm e2e                   # run the E2E suite
+docker compose --profile pipeline run --rm pipeline         # full pipeline (reads .env)
+JIRA_TICKET=SCRUM-42 docker compose --profile pipeline run --rm pipeline  # different ticket
+MOCK_JIRA=1 DRY_RUN=1 docker compose --profile pipeline run --rm pipeline # no credentials
+```
+
+- The repo is bind-mounted: test evidence and `artifacts/` land on the host and
+  code edits apply without rebuilding. `node_modules` stays container-only (the
+  image's Linux-built dependencies are used, not the host's).
+- Runs as the image's non-root user (`pwuser`) so Chromium's sandbox stays
+  enabled; `shm_size` is raised since Playwright needs it.
+- The pipeline container receives your credentials through `env_file: .env`.
+
 ## Usage
 
 ```bash
@@ -93,7 +115,12 @@ MOCK_JIRA=1 DRY_RUN=1 npm run qa -- run -t QA-101   # pipeline without credentia
 
 CI (`.github/workflows/ci.yml`): quality gate (lint+typecheck) → chromium E2E
 on every push/PR → nightly firefox matrix → agentic pipeline smoke
-(mock Jira + dry-run, no secrets needed). Weekly Dependabot for npm and actions.
+(mock Jira + dry-run, no secrets needed) → **daily agentic pipeline** at
+03:00 UTC (currently mock Jira + dry-run; set the `LLM_API_KEY`,
+`JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN` secrets and remove the mock
+flags in `agentic-pipeline-daily` to run real mode; target ticket via the
+`JIRA_TICKET` repo variable, defaults to `QA-101`). Weekly Dependabot for npm
+and actions.
 
 The `Quality dashboard` workflow (`.github/workflows/dashboard.yml`) runs after
 each green CI run: it aggregates `artifacts/*/manifest.json` into

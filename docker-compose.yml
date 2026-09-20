@@ -1,0 +1,24 @@
+name: agentic-qa
+
+# Shared base for both services. The repo is bind-mounted (live code, artifacts
+# written back to the host) but node_modules stays a container-only anonymous
+# volume so the image's Linux-built dependencies are used, not the host's.
+x-app: &app
+  build: .
+  image: agentic-qa-workflow
+  volumes:
+    - .:/app
+    - /app/node_modules
+  shm_size: "1gb"
+
+services:
+  e2e:
+    <<: *app
+    profiles: ["e2e"]
+    command: ["npx", "playwright", "test"]
+
+  pipeline:
+    <<: *app
+    profiles: ["pipeline"]
+    env_file: .env
+    command: ["npm", "run", "qa", "--", "run", "-t", "${JIRA_TICKET:-QA-101}"]
