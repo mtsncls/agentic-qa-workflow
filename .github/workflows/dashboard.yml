@@ -42,11 +42,23 @@ jobs:
       - name: Download agentic run manifest from CI
         run: gh run download "${{ github.event.workflow_run.id }}" --name agentic-run-manifest --dir manifest-download || echo "no manifest artifact for this run"
 
-      - name: Stage manifest for aggregation
+      - name: Download daily run manifest from CI
+        run: gh run download "${{ github.event.workflow_run.id }}" --name agentic-daily-manifest --dir manifest-daily-download || echo "no daily manifest artifact for this run"
+
+      - name: Stage manifests for aggregation
         run: |
-          if [ -f manifest-download/manifest.json ]; then
+          # gh run download preserves the artifact's internal layout
+          # (pipeline-QA-101-<run>/manifest.json), so locate it instead of
+          # hard-coding a flat path.
+          SMOKE=$(find manifest-download -name manifest.json -print -quit 2>/dev/null || true)
+          if [ -n "$SMOKE" ]; then
             mkdir -p artifacts/ci-smoke
-            cp manifest-download/manifest.json artifacts/ci-smoke/manifest.json
+            cp "$SMOKE" artifacts/ci-smoke/manifest.json
+          fi
+          DAILY=$(find manifest-daily-download -name manifest.json -print -quit 2>/dev/null || true)
+          if [ -n "$DAILY" ]; then
+            mkdir -p artifacts/ci-daily
+            cp "$DAILY" artifacts/ci-daily/manifest.json
           fi
 
       # Deploys the committed reporting/metrics-history.json. `npm run report`
