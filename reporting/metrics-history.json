@@ -1567,5 +1567,247 @@
         "avgConfidence": null
       }
     }
+  },
+  {
+    "runId": "pipeline-QA-101-1790236905635",
+    "ticket": "QA-101",
+    "issueUrl": "mock://jira/browse/QA-101",
+    "startedAt": "2026-09-24T08:01:45.635Z",
+    "finishedAt": "2026-09-24T08:01:54.606Z",
+    "durationMs": 8971,
+    "tests": {
+      "passed": 7,
+      "failed": 0,
+      "flaky": 0,
+      "skipped": 1,
+      "total": 8
+    },
+    "coverage": {
+      "total": 4,
+      "covered": 4,
+      "missing": 0
+    },
+    "generatedSpecs": 0,
+    "decisions": {
+      "total": 0,
+      "byAction": {
+        "none": 0,
+        "retry": 0,
+        "create_bug": 0,
+        "comment": 0,
+        "escalate": 0
+      }
+    },
+    "classifications": {
+      "product_bug": 0,
+      "flaky": 0,
+      "test_issue": 0,
+      "environment": 0
+    },
+    "avgConfidence": null,
+    "bugsCreated": 0,
+    "risk": {
+      "cart": {
+        "criteria": 4,
+        "covered": 4,
+        "missing": 0,
+        "passed": 3,
+        "failed": 0,
+        "flaky": 0,
+        "bugs": 0,
+        "avgConfidence": null
+      },
+      "revenue": {
+        "criteria": 4,
+        "covered": 4,
+        "missing": 0,
+        "passed": 4,
+        "failed": 0,
+        "flaky": 0,
+        "bugs": 0,
+        "avgConfidence": null
+      },
+      "checkout": {
+        "criteria": 0,
+        "covered": 0,
+        "missing": 0,
+        "passed": 1,
+        "failed": 0,
+        "flaky": 0,
+        "bugs": 0,
+        "avgConfidence": null
+      },
+      "payment": {
+        "criteria": 0,
+        "covered": 0,
+        "missing": 0,
+        "passed": 1,
+        "failed": 0,
+        "flaky": 0,
+        "bugs": 0,
+        "avgConfidence": null
+      },
+      "critical": {
+        "criteria": 0,
+        "covered": 0,
+        "missing": 0,
+        "passed": 4,
+        "failed": 0,
+        "flaky": 0,
+        "bugs": 0,
+        "avgConfidence": null
+      },
+      "regression": {
+        "criteria": 0,
+        "covered": 0,
+        "missing": 0,
+        "passed": 0,
+        "failed": 0,
+        "flaky": 0,
+        "bugs": 0,
+        "avgConfidence": null
+      },
+      "auth": {
+        "criteria": 0,
+        "covered": 0,
+        "missing": 0,
+        "passed": 3,
+        "failed": 0,
+        "flaky": 0,
+        "bugs": 0,
+        "avgConfidence": null
+      },
+      "pii": {
+        "criteria": 0,
+        "covered": 0,
+        "missing": 0,
+        "passed": 3,
+        "failed": 0,
+        "flaky": 0,
+        "bugs": 0,
+        "avgConfidence": null
+      }
+    }
+  },
+  {
+    "runId": "pipeline-QA-101-1790236951063",
+    "ticket": "QA-101",
+    "issueUrl": "mock://jira/browse/QA-101",
+    "startedAt": "2026-09-24T08:02:31.063Z",
+    "finishedAt": "2026-09-24T08:02:40.700Z",
+    "durationMs": 9637,
+    "tests": {
+      "passed": 7,
+      "failed": 0,
+      "flaky": 0,
+      "skipped": 1,
+      "total": 8
+    },
+    "coverage": {
+      "total": 4,
+      "covered": 4,
+      "missing": 0
+    },
+    "generatedSpecs": 0,
+    "decisions": {
+      "total": 0,
+      "byAction": {
+        "none": 0,
+        "retry": 0,
+        "create_bug": 0,
+        "comment": 0,
+        "escalate": 0
+      }
+    },
+    "classifications": {
+      "product_bug": 0,
+      "flaky": 0,
+      "test_issue": 0,
+      "environment": 0
+    },
+    "avgConfidence": null,
+    "bugsCreated": 0,
+    "risk": {
+      "cart": {
+        "criteria": 4,
+        "covered": 4,
+        "missing": 0,
+        "passed": 3,
+        "failed": 0,
+        "flaky": 0,
+        "bugs": 0,
+        "avgConfidence": null
+      },
+      "revenue": {
+        "criteria": 4,
+        "covered": 4,
+        "missing": 0,
+        "passed": 4,
+        "failed": 0,
+        "flaky": 0,
+        "bugs": 0,
+        "avgConfidence": null
+      },
+      "checkout": {
+        "criteria": 0,
+        "covered": 0,
+        "missing": 0,
+        "passed": 1,
+        "failed": 0,
+        "flaky": 0,
+        "bugs": 0,
+        "avgConfidence": null
+      },
+      "payment": {
+        "criteria": 0,
+        "covered": 0,
+        "missing": 0,
+        "passed": 1,
+        "failed": 0,
+        "flaky": 0,
+        "bugs": 0,
+        "avgConfidence": null
+      },
+      "critical": {
+        "criteria": 0,
+        "covered": 0,
+        "missing": 0,
+        "passed": 4,
+        "failed": 0,
+        "flaky": 0,
+        "bugs": 0,
+        "avgConfidence": null
+      },
+      "regression": {
+        "criteria": 0,
+        "covered": 0,
+        "missing": 0,
+        "passed": 0,
+        "failed": 0,
+        "flaky": 0,
+        "bugs": 0,
+        "avgConfidence": null
+      },
+      "auth": {
+        "criteria": 0,
+        "covered": 0,
+        "missing": 0,
+        "passed": 3,
+        "failed": 0,
+        "flaky": 0,
+        "bugs": 0,
+        "avgConfidence": null
+      },
+      "pii": {
+        "criteria": 0,
+        "covered": 0,
+        "missing": 0,
+        "passed": 3,
+        "failed": 0,
+        "flaky": 0,
+        "bugs": 0,
+        "avgConfidence": null
+      }
+    }
   }
 ]
