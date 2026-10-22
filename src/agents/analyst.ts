@@ -22,7 +22,12 @@ export interface TestResult {
   line?: number;
   status: "passed" | "failed" | "skipped" | "flaky";
   durationMs: number;
+  /** ISO timestamp of the last attempt, when the runner could read it. */
+  startTime?: string;
   errors: string[];
+  stack?: string;
+  /** Source position of the failing assertion, when the runner could read it. */
+  location?: { file: string; line: number; column: number };
   attachments: { name: string; path: string; type: string }[];
   retries: number;
   tags?: string[];

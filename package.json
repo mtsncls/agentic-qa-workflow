@@ -10,6 +10,8 @@
   "scripts": {
     "qa": "tsx src/index.ts",
     "report": "tsx src/reporting/aggregate.ts",
+    "ureport:sync": "tsx src/reporting/ureport-sync.ts",
+    "ureport:analytics": "tsx src/reporting/ureport-analytics.ts",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
     "lint": "eslint . --ext .ts --max-warnings 0",

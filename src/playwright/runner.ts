@@ -9,6 +9,8 @@ export interface RunReport {
   startedAt: string;
   finishedAt: string;
   outputDir: string;
+  /** Playwright project names the run was executed with (e.g. ["chromium"]). */
+  projects: string[];
   stats: { passed: number; failed: number; flaky: number; skipped: number; total: number };
   results: TestResult[];
 }
@@ -64,10 +66,13 @@ interface PwAttachment {
 }
 interface PwError {
   message?: string;
+  stack?: string;
+  location?: { file?: string; line?: number; column?: number };
 }
 interface PwResult {
   status?: string;
   duration?: number;
+  startTime?: string;
   errors?: PwError[];
   attachments?: PwAttachment[];
 }
@@ -86,6 +91,11 @@ interface PwSuite {
   title?: string;
   suites?: PwSuite[];
   specs?: PwSpec[];
+}
+
+interface PwReport {
+  config?: { projects?: { name?: string }[] };
+  suites?: PwSuite[];
 }
 
 function collectSpecs(suite: PwSuite | undefined, acc: PwSpec[] = []): PwSpec[] {
@@ -143,7 +153,7 @@ export async function runPlaywright(
 
   const finishedAt = new Date().toISOString();
 
-  let report: { suites?: PwSuite[] };
+  let report: PwReport;
   try {
     report = JSON.parse(fs.readFileSync(reportPath, "utf8"));
   } catch {
@@ -166,6 +176,24 @@ export async function runPlaywright(
       .map((e) => e.message ?? "")
       .filter(Boolean);
 
+    // Playwright's JSON reporter does not emit `stack`; the error message ends
+    // with the "at file:line:column" frames, so they are extracted from there.
+    const stack =
+      (lastAttempt.errors ?? []).find((e) => e.stack)?.stack ??
+      errors
+        .flatMap((m) => m.match(/^\s+at\s+\S+:\d+:\d+.*$/gm) ?? [])
+        .join("\n")
+        .trim();
+
+    const errorLocation = (lastAttempt.errors ?? []).find((e) => e.location?.line)?.location;
+    const location = errorLocation?.line
+      ? {
+          file: errorLocation.file ?? spec.file ?? "",
+          line: errorLocation.line,
+          column: errorLocation.column ?? 0,
+        }
+      : undefined;
+
     const attachments = (lastAttempt.attachments ?? [])
       .filter((a): a is Required<Pick<PwAttachment, "path">> & PwAttachment => Boolean(a.path))
       .map((a) => ({
@@ -180,7 +208,10 @@ export async function runPlaywright(
       line: spec.line,
       status: hadFailureBeforePass ? "flaky" : normalizeStatus(finalRaw),
       durationMs: Math.round(lastAttempt.duration ?? 0),
+      startTime: lastAttempt.startTime,
       errors,
+      stack: stack || undefined,
+      location,
       attachments,
       retries: Math.max(0, attempts.length - 1),
       tags: spec.tags ?? [],
@@ -196,5 +227,9 @@ export async function runPlaywright(
     total: results.length,
   };
 
-  return { startedAt, finishedAt, outputDir, stats, results };
+  const projects = (report.config?.projects ?? [])
+    .map((p) => p.name)
+    .filter((n): n is string => Boolean(n));
+
+  return { startedAt, finishedAt, outputDir, projects, stats, results };
 }

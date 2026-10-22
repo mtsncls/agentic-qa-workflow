@@ -22,3 +22,50 @@ services:
     profiles: ["pipeline"]
     env_file: .env
     command: ["npm", "run", "qa", "--", "run", "-t", "${JIRA_TICKET:-QA-101}"]
+
+  # ── uReport (test reporting server) ─────────────────────────────────────
+  # Built straight from the upstream repository (pinned to a commit, so the
+  # image is reproducible) so the version matches what the integration
+  # targets. Start with:
+  #   docker compose --profile ureport up --build
+  # The UI is then on http://localhost:8080 (admin / the password set in
+  # UREPORT_ADMIN_PASSWORD). The port is bound to localhost only: uReport
+  # holds test evidence and must not be reachable from the network.
+  ureport-db:
+    image: mongo:6
+    profiles: ["ureport"]
+    volumes:
+      - ureport_mongo:/data/db
+    restart: unless-stopped
+
+  ureport:
+    build:
+      context: https://github.com/ureport-web/ureport-standalone.git#59979c2ce4c990d789130ddb8f210a253bcf2537
+    image: agentic-qa-ureport
+    profiles: ["ureport"]
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      - NODE_ENV=docker
+      - PORT=8080
+      - DBHost=mongodb://ureport-db:27017/ureport
+      - ADMIN_EMAIL=${UREPORT_ADMIN_EMAIL:-admin@example.com}
+      - ADMIN_PASSWORD=${UREPORT_ADMIN_PASSWORD:-changeme}
+      - DEMO_PASSWORD=${UREPORT_DEMO_PASSWORD:-1234}
+    # Refuses to start with the default password: uReport holds test evidence
+    # and an API token, so "admin/changeme" is not an acceptable default.
+    command:
+      - /bin/sh
+      - -c
+      - |
+        if [ -z "$$ADMIN_PASSWORD" ] || [ "$$ADMIN_PASSWORD" = "changeme" ]; then
+          echo "Refusing to start: set UREPORT_ADMIN_PASSWORD in .env to a real password." >&2
+          exit 1
+        fi
+        node initialize.js && npm run start
+    depends_on:
+      - ureport-db
+    restart: unless-stopped
+
+volumes:
+  ureport_mongo:

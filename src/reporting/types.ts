@@ -20,8 +20,31 @@ export interface RunInfo {
   startedAt: string;
   finishedAt: string;
   outputDir: string;
+  /** Playwright project names the run was executed with (e.g. ["chromium"]). */
+  projects?: string[];
   stats: RunStats;
-  results?: { title: string; file: string; status: TestStatus; tags: string[] }[];
+  results?: ManifestTestResult[];
+}
+
+/**
+ * One test outcome as stored in the manifest. Carries the evidence the agent
+ * analysed (duration, error, stack, screenshot paths) so downstream consumers
+ * — uReport, the metrics aggregator — never have to re-read the Playwright
+ * report. Attachment paths are relative to the run's output dir.
+ */
+export interface ManifestTestResult {
+  title: string;
+  file: string;
+  line?: number;
+  status: TestStatus;
+  tags: string[];
+  durationMs?: number;
+  startTime?: string;
+  retries?: number;
+  errors?: string[];
+  stack?: string;
+  location?: { file: string; line: number; column: number };
+  attachments?: { name: string; path: string; type: string }[];
 }
 
 export interface CoverageEntry {
@@ -117,4 +140,34 @@ export interface RiskMetric {
   flaky: number;
   bugs: number;
   avgConfidence: number | null;
+}
+
+/**
+ * Cross-build analytics read back from uReport
+ * (POST /api/analytics/*). Serialised to reporting/ureport-history.json and
+ * rendered by the GitHub Pages dashboard, so the published site can show
+ * trends that span every build uReport has seen — not just one run.
+ */
+export interface UReportAnalytics {
+  generatedAt: string;
+  serverUrl: string;
+  /** Deep link to the uReport app (the root URL serves the marketing page). */
+  appUrl: string;
+  product: string;
+  type: string;
+  topFailures: { uid: string; name: string; failCount: number; lastFailedAt: string }[];
+  slowestTests: { uid: string; name: string; avgDurationMs: number; maxDurationMs: number; runCount: number }[];
+  passRateHistory: {
+    build: number;
+    passRate: number;
+    totalTests: number;
+    startTime: string;
+    isAnomaly: boolean;
+  }[];
+  buildDurationHistory: {
+    build: number;
+    startTime: string;
+    durationMs: number;
+    configCount: number;
+  }[];
 }

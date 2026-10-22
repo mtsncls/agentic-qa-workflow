@@ -5,11 +5,12 @@ import { getJira } from "../jira";
 import { extractCriteria, type AcceptanceCriterion } from "../jira/acceptance";
 import { postRunComment } from "../jira/reporter";
 import { listSpecs, runPlaywright, type RunReport } from "../playwright/runner";
-import type { TestResult } from "../agents/analyst";
+import type { ManifestTestResult } from "../reporting/types";
 import { planTesting, type TestPlan } from "../agents/planner";
 import { generateMissingTests } from "../agents/generator";
 import { handleFailures, type Decision } from "../decisions/engine";
-import { assertModelConfigured, assertJiraConfigured } from "../config/env";
+import { assertModelConfigured, assertJiraConfigured, ureportConfigured } from "../config/env";
+import { pushManifest } from "../reporting/ureport";
 import { log } from "../utils/logger";
 
 export interface PipelineOptions {
@@ -21,18 +22,29 @@ export interface PipelineSummary {
   ticket: string;
   issueUrl: string;
   criteria: AcceptanceCriterion[];
-  plan: TestPlan | null;
+  plan: TestPlan;
   generated: string[];
   run: {
     startedAt: string;
     finishedAt: string;
     outputDir: string;
+    projects: string[];
     stats: RunReport["stats"];
-    results: { title: string; file: string; status: TestResult["status"]; tags: string[] }[];
+    results: ManifestTestResult[];
   };
   decisions: Decision[];
   bugsCreated: string[];
   manifestPath: string;
+}
+
+/**
+ * Attachment paths are stored relative to the run's output dir so the manifest
+ * stays portable: it can be copied to another machine (or into a CI artifact)
+ * and still point at the screenshots that belong to it.
+ */
+function relativeToRunDir(filePath: string, outputDir: string): string {
+  const rel = path.relative(path.resolve(outputDir), path.resolve(filePath));
+  return rel && !rel.startsWith("..") ? rel : path.basename(filePath);
 }
 
 /**
@@ -141,12 +153,25 @@ export async function runPipeline(opts: PipelineOptions): Promise<PipelineSummar
       startedAt: run.startedAt,
       finishedAt: run.finishedAt,
       outputDir: run.outputDir,
+      projects: run.projects,
       stats: run.stats,
       results: run.results.map((r) => ({
         title: r.title,
         file: r.file,
+        line: r.line,
         status: r.status,
         tags: r.tags ?? [],
+        durationMs: r.durationMs,
+        startTime: r.startTime,
+        retries: r.retries,
+        errors: r.errors,
+        stack: r.stack,
+        location: r.location,
+        attachments: r.attachments.map((a) => ({
+          name: a.name,
+          path: relativeToRunDir(a.path, run.outputDir),
+          type: a.type,
+        })),
       })),
     },
     decisions,
@@ -160,6 +185,24 @@ export async function runPipeline(opts: PipelineOptions): Promise<PipelineSummar
     path.join(run.outputDir, "criteria.json"),
     JSON.stringify(criteria, null, 2)
   );
+
+  // ── 8. uReport push (optional) ─────────────────────────────────────────
+  // The run is pushed once the manifest exists, so uReport receives the
+  // agentic verdict (classification, confidence, Jira bug key) together with
+  // the raw Playwright outcome. A failure here must never fail the pipeline.
+  if (ureportConfigured()) {
+    try {
+      const pushed = await pushManifest(summary, run.outputDir);
+      if (pushed.tests) {
+        log.ok("ureport", `Build ${pushed.buildId} · ${pushed.tests} test(s) pushed`);
+      } else {
+        log.warn("ureport", pushed.warnings[0] ?? "nothing to push");
+      }
+      pushed.warnings.forEach((w) => log.warn("ureport", w));
+    } catch (err) {
+      log.warn("ureport", `Push failed: ${(err as Error).message}`);
+    }
+  }
 
   log.banner("PIPELINE SUMMARY");
   console.log(`Ticket:        ${summary.issueUrl}`);
