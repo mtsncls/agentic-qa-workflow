@@ -68,11 +68,25 @@ jobs:
       - name: Aggregate metrics
         run: npm run report
 
+      # Refreshes the cross-build analytics computed by uReport (top failures,
+      # slowest tests, pass-rate and build-duration history). The script is a
+      # no-op when the uReport secrets are not configured, so the dashboard
+      # simply keeps its last published numbers. The file is git-ignored: it
+      # points at the instance that generated it, so it is published to Pages
+      # (see "Assemble dashboard for Pages") but never committed.
+      - name: Refresh uReport analytics
+        env:
+          UREPORT_URL: ${{ secrets.UREPORT_URL }}
+          UREPORT_API_TOKEN: ${{ secrets.UREPORT_API_TOKEN }}
+          UREPORT_PRODUCT: ${{ vars.UREPORT_PRODUCT }}
+          UREPORT_TYPE: ${{ vars.UREPORT_TYPE }}
+        run: npm run ureport:analytics
+
       - name: Commit updated history
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add reporting/metrics-history.json
+          git add reporting/
           git diff --cached --quiet || git commit -m "chore: update quality metrics history [skip ci]"
           git push
 
@@ -96,6 +110,9 @@ jobs:
           mkdir -p _site
           cp -r dashboard/* _site/
           cp reporting/metrics-history.json _site/metrics-history.json
+          if [ -f reporting/ureport-history.json ]; then
+            cp reporting/ureport-history.json _site/ureport-history.json
+          fi
           if [ -d allure-report ]; then
             mkdir -p _site/allure
             cp -r allure-report/* _site/allure/

@@ -15,3 +15,10 @@ allure-report/
 
 *.log
 .DS_Store
+
+# Local copies of the reporting history used for dashboard previews
+dashboard/metrics-history.json
+dashboard/ureport-history.json
+# Generated from the uReport instance it points at, so it is never committed;
+# CI regenerates it before publishing the dashboard.
+reporting/ureport-history.json

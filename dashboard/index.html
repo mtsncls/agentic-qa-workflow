@@ -52,6 +52,20 @@
     background: var(--surface); border: 1px solid var(--border); color: var(--text-secondary);
     border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer;
   }
+  .header-actions { display: flex; align-items: center; gap: 8px; }
+  #ureport-link {
+    display: none;
+    background: var(--accent); border: 1px solid var(--accent); color: #fff;
+    border-radius: 6px; padding: 7px 12px; font-size: 12px; cursor: pointer;
+    text-decoration: none; font-weight: 500;
+  }
+  #ureport-link:hover { filter: brightness(1.1); }
+  .section-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 1rem; flex-wrap: wrap; margin: 1.75rem 0 0.75rem;
+  }
+  .section-head h2 { font-size: 15px; font-weight: 600; margin: 0; }
+  .section-head span { font-size: 12px; color: var(--text-muted); }
   .kpi-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -111,7 +125,10 @@
       <h1>Agentic QA Workflow — quality dashboard</h1>
       <p class="subtitle">Test health and agentic decision metrics, aggregated from <code>reporting/metrics-history.json</code></p>
     </div>
-    <button id="theme-toggle" onclick="toggleTheme()">Light mode</button>
+    <div class="header-actions">
+      <a id="ureport-link" href="#" target="_blank" rel="noopener">Open uReport ↗</a>
+      <button id="theme-toggle" onclick="toggleTheme()">Light mode</button>
+    </div>
   </header>
 
   <div id="content">
@@ -188,6 +205,41 @@
       </div>
     </div>
   </div>
+
+    <div id="ureport-section" style="display: none;">
+      <div class="section-head">
+        <h2>Cross-build analytics — uReport</h2>
+        <span id="ureport-meta"></span>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <h2>Pass rate per build</h2>
+          <div class="chart-wrap" style="height: 240px;">
+            <canvas id="passRateChart" role="img" aria-label="Line chart of the pass rate per uReport build"></canvas>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Build duration</h2>
+          <div class="chart-wrap" style="height: 240px;">
+            <canvas id="buildDurationChart" role="img" aria-label="Bar chart of the duration of each uReport build"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <h2>Top failures across builds</h2>
+          <div class="chart-wrap" style="height: 240px;">
+            <canvas id="topFailuresChart" role="img" aria-label="Bar chart of the tests that failed most often across builds"></canvas>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Slowest tests across builds</h2>
+          <div class="chart-wrap" style="height: 240px;">
+            <canvas id="slowestChart" role="img" aria-label="Bar chart of the average duration of the slowest tests"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
 </div>
 
 <script>
@@ -207,6 +259,17 @@ function pct(n, d) { return d ? Math.round((n / d) * 100) : 0; }
 
 async function loadHistory() {
   const candidates = ['./metrics-history.json', '../reporting/metrics-history.json', './reporting/metrics-history.json'];
+  for (const url of candidates) {
+    try {
+      const res = await fetch(url, { cache: 'no-store' });
+      if (res.ok) return await res.json();
+    } catch (e) { /* try next */ }
+  }
+  return null;
+}
+
+async function loadUreport() {
+  const candidates = ['./ureport-history.json', '../reporting/ureport-history.json', './reporting/ureport-history.json'];
   for (const url of candidates) {
     try {
       const res = await fetch(url, { cache: 'no-store' });
@@ -397,16 +460,123 @@ function renderRiskTable(history) {
 
 (async function init() {
   const history = await loadHistory();
-  if (!history || !history.length) { renderEmpty(); return; }
-  renderKpis(history);
-  renderTestsChart(history);
-  renderConfidenceChart(history);
-  renderActionsChart(history);
-  renderClassChart(history);
-  renderRiskChart(history);
-  renderRiskTable(history);
-  renderTable(history);
+  if (!history || !history.length) { renderEmpty(); }
+  else {
+    renderKpis(history);
+    renderTestsChart(history);
+    renderConfidenceChart(history);
+    renderActionsChart(history);
+    renderClassChart(history);
+    renderRiskChart(history);
+    renderRiskTable(history);
+    renderTable(history);
+  }
+  await renderUreport();
 })();
+
+async function renderUreport() {
+  const data = await loadUreport();
+  if (!data) return;
+
+  const link = document.getElementById('ureport-link');
+  const target = data.appUrl || data.serverUrl;
+  if (target) {
+    link.href = target;
+    link.style.display = 'inline-block';
+  }
+
+  const section = document.getElementById('ureport-section');
+  const hasData = (data.passRateHistory || []).length || (data.topFailures || []).length ||
+                  (data.slowestTests || []).length || (data.buildDurationHistory || []).length;
+  if (!hasData) return;
+  section.style.display = 'block';
+
+  document.getElementById('ureport-meta').textContent =
+    data.product + ' / ' + data.type + ' · refreshed ' + fmtDate(data.generatedAt);
+
+  renderPassRateChart(data.passRateHistory || []);
+  renderBuildDurationChart(data.buildDurationHistory || []);
+  renderTopFailuresChart(data.topFailures || []);
+  renderSlowestChart(data.slowestTests || []);
+}
+
+function renderPassRateChart(points) {
+  const ctx = document.getElementById('passRateChart');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: points.map(p => fmtDate(p.startTime)),
+      datasets: [{
+        label: 'Pass rate %',
+        data: points.map(p => p.passRate),
+        borderColor: '#2fbf71',
+        backgroundColor: 'rgba(47,191,113,0.12)',
+        fill: true,
+        tension: 0.25,
+        pointRadius: 3,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: { y: { min: 0, max: 100, grid: { color: 'rgba(120,130,150,0.12)' } }, x: { grid: { display: false } } },
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+
+function renderBuildDurationChart(points) {
+  const ctx = document.getElementById('buildDurationChart');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: points.map(p => fmtDate(p.startTime)),
+      datasets: [{
+        label: 'Duration (s)',
+        data: points.map(p => Math.round(p.durationMs / 1000)),
+        backgroundColor: '#4a8fe7',
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: { y: { beginAtZero: true, grid: { color: 'rgba(120,130,150,0.12)' } }, x: { grid: { display: false } } },
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+
+function renderTopFailuresChart(items) {
+  const ctx = document.getElementById('topFailuresChart');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: items.map(i => i.name),
+      datasets: [{ label: 'Failures', data: items.map(i => i.failCount), backgroundColor: '#e0553f' }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      scales: { x: { beginAtZero: true, ticks: { precision: 0 } }, y: { grid: { display: false } } },
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+
+function renderSlowestChart(items) {
+  const ctx = document.getElementById('slowestChart');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: items.map(i => i.name),
+      datasets: [{ label: 'Avg duration (ms)', data: items.map(i => Math.round(i.avgDurationMs)), backgroundColor: '#e0a52d' }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      scales: { x: { beginAtZero: true }, y: { grid: { display: false } } },
+      plugins: { legend: { display: false } }
+    }
+  });
+}
 </script>
 </body>
 </html>

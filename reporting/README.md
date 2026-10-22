@@ -26,6 +26,23 @@ history back to `main`, and publishes `dashboard/` + the latest
 `metrics-history.json` to GitHub Pages. Enable Pages (Settings → Pages →
 Source: GitHub Actions) once, then it updates on every green CI run.
 
+## uReport history
+
+`npm run ureport:analytics` reads the cross-build analytics from
+[uReport](../docs/ureport.md) — top failures, slowest tests, pass-rate
+history and build durations — into `ureport-history.json`. Unlike
+`metrics-history.json` (one entry per pipeline run, derived from the
+manifest), these numbers are computed by uReport across every build it knows,
+so they answer "which tests fail most often" rather than "how did the last run
+go".
+
+The dashboard reads it from the same directory and renders a "Cross-build
+analytics" section plus a link to the uReport instance. Unlike
+`metrics-history.json`, the file is not committed: it points at the instance
+that generated it, so CI regenerates and publishes it to Pages but never
+version it. The section stays hidden when the file is absent (no uReport
+configured).
+
 ## Business-risk tags
 
 Generic "X% coverage" hides *what* is at risk. Every run is also rolled up by

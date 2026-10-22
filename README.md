@@ -111,6 +111,8 @@ npm run allure:serve    # generates and opens the Allure report
 # Tag tests by business risk (see src/risk.ts) so the dashboard rolls up per area:
 #   test('...', { tag: ['@auth', '@critical'] }, ...)  or  - [auth][pii] in Jira AC text
 MOCK_JIRA=1 DRY_RUN=1 npm run qa -- run -t QA-101   # pipeline without credentials
+npm run ureport:sync       # push historical runs to uReport (backfill)
+npm run ureport:analytics  # refresh reporting/ureport-history.json
 ```
 
 CI (`.github/workflows/ci.yml`): quality gate (lint+typecheck) → chromium E2E
@@ -129,18 +131,50 @@ agentic metrics dashboard and the Allure test report to GitHub Pages. Enable
 Pages once (**Settings → Pages → Source: "GitHub Actions"**), then both update
 automatically.
 
+## uReport (test reporting server)
+
+Each pipeline run is also pushed to [uReport](https://github.com/ureport-web/ureport-standalone)
+as a build, **after** the run — so the analyst's verdict (classification,
+confidence, the Jira bug it created) travels with the raw Playwright outcome.
+uReport then answers cross-build questions the per-run manifest cannot: which
+tests fail most often, which are the slowest, how the pass rate trends.
+
+```bash
+docker compose --profile ureport up --build -d   # local uReport (http://127.0.0.1:8080)
+npm run ureport:sync                              # backfill historical runs
+npm run ureport:analytics                         # refresh reporting/ureport-history.json
+```
+
+Set `UREPORT_URL` and `UREPORT_API_TOKEN` (see `.env.example`) to enable it;
+the push is non-fatal, so an unreachable uReport never fails a pipeline. The
+dashboard gains a link to the instance and a cross-build analytics section.
+
+The token must belong to an `operator` user (not `admin`), the URL must use
+https unless it points at a local host, local paths are redacted before
+anything leaves the machine and failure screenshots are opt-in
+(`UREPORT_ATTACH_SCREENSHOTS=0` by default). The security model and the
+threat model are in [`docs/ureport.md`](docs/ureport.md).
+
 ## Live reports (GitHub Pages)
 
 | Report | URL |
 |---|---|
 | Agentic quality dashboard (KPIs, decision/classification trends) | [agentic-qa-workflow](https://mtsncls.github.io/agentic-qa-workflow/) |
 | Allure execution report (steps, retries, attachments) | [agentic-qa-workflow/allure](https://mtsncls.github.io/agentic-qa-workflow/allure/) |
+| uReport (cross-build analytics: top failures, slowest tests, pass-rate history) | [localhost:8080/nextgen/overview](http://localhost:8080/nextgen/overview) |
+
+The dashboard links to the uReport instance and renders its cross-build
+analytics; the uReport link points to your own instance, so it is
+`http://localhost:8080/nextgen/overview` while you run it locally and the
+public URL once `UREPORT_URL` points at a deployed one.
 
 Local preview:
 
 ```bash
 npm run report
+npm run ureport:analytics                 # refresh reporting/ureport-history.json
 cp reporting/metrics-history.json dashboard/
+cp reporting/ureport-history.json dashboard/
 npx serve dashboard          # or: python3 -m http.server --directory dashboard
 npm run allure:serve         # opens the local Allure report
 ```

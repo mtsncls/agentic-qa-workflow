@@ -110,10 +110,17 @@ jobs:
 
       # Full pipeline without credentials: deterministic planner/analyst and mocked Jira.
       # For real mode: define LLM_API_KEY (OpenRouter/OpenAI-compatible) + JIRA_* secrets and remove MOCK_JIRA/DRY_RUN.
+      # When UREPORT_URL/UREPORT_API_TOKEN are set, the run is also pushed to
+      # uReport as a build; the push is non-fatal, so a missing or broken
+      # uReport never fails the pipeline.
       - name: Run pipeline (MOCK_JIRA + DRY_RUN)
         env:
           MOCK_JIRA: "1"
           DRY_RUN: "1"
+          UREPORT_URL: ${{ secrets.UREPORT_URL }}
+          UREPORT_API_TOKEN: ${{ secrets.UREPORT_API_TOKEN }}
+          UREPORT_PRODUCT: ${{ vars.UREPORT_PRODUCT }}
+          UREPORT_TYPE: ${{ vars.UREPORT_TYPE }}
         run: npm run qa -- run -t QA-101
 
       - name: Upload run manifest
@@ -150,6 +157,10 @@ jobs:
         env:
           MOCK_JIRA: "1"
           DRY_RUN: "1"
+          UREPORT_URL: ${{ secrets.UREPORT_URL }}
+          UREPORT_API_TOKEN: ${{ secrets.UREPORT_API_TOKEN }}
+          UREPORT_PRODUCT: ${{ vars.UREPORT_PRODUCT }}
+          UREPORT_TYPE: ${{ vars.UREPORT_TYPE }}
         run: npm run qa -- run -t "${JIRA_TICKET:-QA-101}"
 
       - name: Upload run manifest
