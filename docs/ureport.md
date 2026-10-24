@@ -112,8 +112,9 @@ a separate database per environment, and purge old builds periodically.
 | `UREPORT_ATTACH_SCREENSHOTS` | `0` | Send failure screenshots. Opt-in. |
 | `UREPORT_REDACT_PATHS` | `1` | Replace the local repository path with `<repo>`. |
 | `UREPORT_DEADLINE_MS` | `60000` | Total budget for one push. |
-| `UREPORT_ADMIN_EMAIL` | `admin@example.com` | Seed account of the local server (first start only). |
-| `UREPORT_ADMIN_PASSWORD` | – | Password of the local server. The container refuses to start without it. |
+| `UREPORT_ADMIN_EMAIL` | `admin@example.com` | Seed account of the server (first start only). |
+| `UREPORT_ADMIN_PASSWORD` | – | Password of the admin account. The container refuses to start without it. |
+| `UREPORT_DEMO_PASSWORD` | `1234` locally | Password of the seeded `demo` viewer. The production compose refuses to start without a strong one. |
 
 ## Running a local uReport
 
@@ -126,6 +127,9 @@ docker compose --profile ureport up --build -d
 
 - UI: <http://localhost:8080/nextgen/login>. The instance is bound to
   `127.0.0.1` only.
+- The seed always creates a `demo` viewer. Locally it keeps the upstream
+  default password (`1234`, set `UREPORT_DEMO_PASSWORD` to change it); the
+  production compose rejects anything shorter than 16 characters.
 - Set `UREPORT_ADMIN_PASSWORD` in `.env` **before the first start** (the
   container refuses to start with an empty or `changeme` password). The
   credentials are only applied on the first start, when the database is
@@ -210,6 +214,7 @@ cat > .env.prod <<'EOF'
 UREPORT_DOMAIN=agentic-qa.duckdns.org
 UREPORT_ADMIN_EMAIL=admin@example.com
 UREPORT_ADMIN_PASSWORD=<at least 16 random characters>
+UREPORT_DEMO_PASSWORD=<another 16+ random characters>
 EOF
 docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
 ```

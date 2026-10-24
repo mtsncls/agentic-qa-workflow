@@ -28,13 +28,18 @@ x-ureport: &ureport
     - DBHost=mongodb://ureport-db:27017/ureport
     - ADMIN_EMAIL=${UREPORT_ADMIN_EMAIL}
     - ADMIN_PASSWORD=${UREPORT_ADMIN_PASSWORD}
-    - DEMO_PASSWORD=${UREPORT_DEMO_PASSWORD:-}
+    - DEMO_PASSWORD=${UREPORT_DEMO_PASSWORD}
   command:
     - /bin/sh
     - -c
     - |
       if [ -z "$$ADMIN_PASSWORD" ] || [ "$$ADMIN_PASSWORD" = "changeme" ] || [ $${#ADMIN_PASSWORD} -lt 16 ]; then
         echo "Refusing to start: set UREPORT_ADMIN_PASSWORD to at least 16 characters." >&2
+        exit 1
+      fi
+      if [ -z "$$DEMO_PASSWORD" ] || [ $${#DEMO_PASSWORD} -lt 16 ]; then
+        echo "Refusing to start: set UREPORT_DEMO_PASSWORD to at least 16 characters." >&2
+        echo "The seed always creates a 'demo' viewer; empty falls back to 1234." >&2
         exit 1
       fi
       node initialize.js && npm run start
