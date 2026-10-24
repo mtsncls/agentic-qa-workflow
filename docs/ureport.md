@@ -157,17 +157,57 @@ VPS is enough.
 Requirements:
 
 - a host with Docker Compose (1 vCPU / 1 GB RAM is plenty for this test volume);
-- a DNS name (A/AAAA record) pointing at it;
+- a public DNS name pointing at it;
 - inbound ports 80 and 443 open.
 
 `docker-compose.prod.yml` starts three services: MongoDB, uReport and Caddy.
 Caddy obtains a Let's Encrypt certificate for `UREPORT_DOMAIN`, redirects http
 to https and sends HSTS; uReport and MongoDB publish no host ports.
 
+### Getting the name for free (DuckDNS)
+
+DuckDNS provides `name.duckdns.org` subdomains at no cost and is on the Public
+Suffix List, so the certificate for your subdomain has its own Let's Encrypt
+rate-limit bucket instead of sharing one with every other user.
+
+1. Sign in at <https://www.duckdns.org> (GitHub/Google login is supported),
+   create a subdomain (up to five) and copy the **account token** from the
+   top of the page.
+2. On the server, point the name at its public IP and keep it current:
+
+   ```bash
+   cat > /etc/duckdns.env <<'EOF'
+   DUCKDNS_DOMAIN=agentic-qa
+   DUCKDNS_TOKEN=<the token from step 1>
+   EOF
+   chmod 600 /etc/duckdns.env
+
+   . /etc/duckdns.env
+   deploy/duckdns-update.sh          # prints "... now points at this host"
+
+   # follow a dynamic address; harmless when it does not change
+   echo '*/5 * * * * . /etc/duckdns.env; /opt/agentic-qa/deploy/duckdns-update.sh >/dev/null 2>&1' \
+     | crontab -
+   ```
+
+   The script sends an empty `ip` parameter, so DuckDNS records the address
+   the request comes from — no need to know the public IP, and it works
+   behind NAT as long as only port 80/443 are forwarded. The cron job also
+   keeps the free subdomain active.
+
+3. Verify before starting the stack:
+
+   ```bash
+   dig +short agentic-qa.duckdns.org     # must print the server's public IP
+   ```
+
+Then `UREPORT_DOMAIN=agentic-qa.duckdns.org`. DuckDNS does not support
+wildcards, which is fine: Caddy only requests the single hostname.
+
 ```bash
 # on the server, with the repo checked out (or just these three files)
 cat > .env.prod <<'EOF'
-UREPORT_DOMAIN=ureport.example.com
+UREPORT_DOMAIN=agentic-qa.duckdns.org
 UREPORT_ADMIN_EMAIL=admin@example.com
 UREPORT_ADMIN_PASSWORD=<at least 16 random characters>
 EOF
@@ -181,7 +221,7 @@ database is empty; changing the variable later does not rotate the account.
 Then create the `operator` user against the public URL and generate its token:
 
 ```bash
-BASE=https://ureport.example.com
+BASE=https://agentic-qa.duckdns.org
 
 curl -c admin.jar -X POST $BASE/api/login -H 'Content-Type: application/json' \
   -d '{"username":"admin","password":"<admin password>"}'
@@ -198,7 +238,14 @@ curl -b op.jar -X POST $BASE/api/token -H 'Content-Type: application/json' -d '{
 ```
 
 Finally set the repository secrets and variables (see *CI* below) and the
-dashboard will link to `https://ureport.example.com/nextgen/overview`.
+dashboard will link to `https://agentic-qa.duckdns.org/nextgen/overview`.
+
+Check that the certificate was issued (the first request can take a few
+seconds while Caddy completes the ACME challenge):
+
+```bash
+curl -sSI https://agentic-qa.duckdns.org/nextgen/login | head -1   # HTTP/2 200
+```
 
 Operational notes:
 
@@ -251,7 +298,7 @@ repository secrets and variables:
 - variable `UREPORT_TYPE` (default `E2E`).
 
 ```bash
-gh secret set UREPORT_URL --body "https://ureport.example.com"
+gh secret set UREPORT_URL --body "https://agentic-qa.duckdns.org"
 gh secret set UREPORT_API_TOKEN --body "<operator token>"
 gh variable set UREPORT_PRODUCT --body "agentic-qa-workflow"
 gh variable set UREPORT_TYPE --body "E2E"

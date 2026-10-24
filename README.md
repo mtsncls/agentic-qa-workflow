@@ -157,7 +157,8 @@ threat model are in [`docs/ureport.md`](docs/ureport.md).
 
 CI can only push to an instance it can reach, so for the GitHub runs deploy one
 on a host with a public https URL: `docker-compose.prod.yml` + `deploy/Caddyfile`
-run MongoDB, uReport and Caddy (automatic TLS) and expose only ports 80/443.
+run MongoDB, uReport and Caddy (automatic TLS) and expose only ports 80/443. A
+free `name.duckdns.org` subdomain is enough (see `deploy/duckdns-update.sh`).
 Steps and the four `gh secret`/`gh variable` commands:
 [`docs/ureport.md`](docs/ureport.md#deploying-a-public-instance-for-ci).
 
