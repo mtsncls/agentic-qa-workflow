@@ -161,12 +161,11 @@ threat model are in [`docs/ureport.md`](docs/ureport.md).
 |---|---|
 | Agentic quality dashboard (KPIs, decision/classification trends) | [agentic-qa-workflow](https://mtsncls.github.io/agentic-qa-workflow/) |
 | Allure execution report (steps, retries, attachments) | [agentic-qa-workflow/allure](https://mtsncls.github.io/agentic-qa-workflow/allure/) |
-| uReport (cross-build analytics: top failures, slowest tests, pass-rate history) | [localhost:8080/nextgen/overview](http://localhost:8080/nextgen/overview) |
 
-The dashboard links to the uReport instance and renders its cross-build
-analytics; the uReport link points to your own instance, so it is
-`http://localhost:8080/nextgen/overview` while you run it locally and the
-public URL once `UREPORT_URL` points at a deployed one.
+uReport is a server, not a static report, so it is not published to Pages:
+the dashboard embeds its cross-build analytics and links to the instance
+configured in `UREPORT_URL`. Without that variable the section is hidden and
+no link is rendered.
 
 Local preview:
 
