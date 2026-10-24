@@ -1,0 +1,79 @@
+name: agentic-qa-ureport
+
+# Production deployment of uReport for CI: a public, https-only instance that
+# GitHub Actions can reach, so every pipeline run is visible in the UI.
+#
+# Unlike the local profile in docker-compose.yml, nothing is published on the
+# host except Caddy's 80/443: uReport and MongoDB stay on the internal network.
+# Caddy terminates TLS (Let's Encrypt) and redirects http to https, which is
+# what the client requires outside localhost.
+#
+#   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+#
+# Requires .env.prod with UREPORT_DOMAIN, UREPORT_ADMIN_EMAIL and
+# UREPORT_ADMIN_PASSWORD. See docs/ureport.md ("Deploying a public instance").
+
+x-ureport: &ureport
+  build:
+    context: https://github.com/ureport-web/ureport-standalone.git#59979c2ce4c990d789130ddb8f210a253bcf2537
+  image: agentic-qa-ureport
+  restart: unless-stopped
+  environment:
+    # Not "production": upstream marks the session cookie Secure only in that
+    # mode and never sets Express' "trust proxy", so behind Caddy the cookie
+    # would never be sent back and login would loop. Caddy already redirects
+    # http to https and sends HSTS.
+    - NODE_ENV=docker
+    - PORT=8080
+    - DBHost=mongodb://ureport-db:27017/ureport
+    - ADMIN_EMAIL=${UREPORT_ADMIN_EMAIL}
+    - ADMIN_PASSWORD=${UREPORT_ADMIN_PASSWORD}
+    - DEMO_PASSWORD=${UREPORT_DEMO_PASSWORD:-}
+  command:
+    - /bin/sh
+    - -c
+    - |
+      if [ -z "$$ADMIN_PASSWORD" ] || [ "$$ADMIN_PASSWORD" = "changeme" ] || [ $${#ADMIN_PASSWORD} -lt 16 ]; then
+        echo "Refusing to start: set UREPORT_ADMIN_PASSWORD to at least 16 characters." >&2
+        exit 1
+      fi
+      node initialize.js && npm run start
+
+services:
+  ureport-db:
+    image: mongo:6
+    restart: unless-stopped
+    volumes:
+      - ureport_mongo:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  ureport:
+    <<: *ureport
+    depends_on:
+      ureport-db:
+        condition: service_healthy
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - ureport
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      - UREPORT_DOMAIN=${UREPORT_DOMAIN:?set UREPORT_DOMAIN in .env.prod}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  ureport_mongo:
+  caddy_data:
+  caddy_config:

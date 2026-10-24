@@ -1,0 +1,14 @@
+# TLS termination for the production uReport instance (docker-compose.prod.yml).
+# Caddy obtains and renews the certificate from Let's Encrypt over the DNS name
+# in UREPORT_DOMAIN and redirects http to https.
+{$UREPORT_DOMAIN} {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+	}
+
+	reverse_proxy ureport:8080
+}

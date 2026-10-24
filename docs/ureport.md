@@ -85,10 +85,13 @@ uReport can delay the pipeline but never stall it, and the push is
 non-fatal: a failure is logged as a warning and the pipeline keeps its exit
 code.
 
-**Exposure.** The uReport instance is bound to `127.0.0.1` and the container
-refuses to start while the admin password is empty or `changeme`. uReport
-stores test results **without a TTL**: they stay until they are purged by
-hand, so the database is as sensitive as the evidence it holds.
+**Exposure.** By default the uReport instance is bound to `127.0.0.1` and the
+container refuses to start while the admin password is empty or `changeme`
+(less than 16 characters in the production file). uReport stores test results
+**without a TTL**: they stay until they are purged by hand, so the database is
+as sensitive as the evidence it holds. When the instance is public (see
+*Deploying a public instance*), only ports 80/443 are exposed and Caddy
+terminates TLS; uReport and MongoDB stay on the compose network.
 
 **Residual risks.** Redaction only covers the local repository path. A failure
 message can still contain application data (a rendered total, a username, an
@@ -144,6 +147,78 @@ UREPORT_TEAM=QA
 The push is **non-fatal**: if uReport is unreachable, the pipeline logs a
 warning and keeps its exit code. uReport is a reporting sidecar, never a gate.
 
+## Deploying a public instance (for CI)
+
+GitHub Actions cannot reach an instance that runs on a laptop, and it cannot
+host one itself: the runner is ephemeral and has no public URL. To have every
+CI run visible in uReport, run it on a host with a public https URL — a small
+VPS is enough.
+
+Requirements:
+
+- a host with Docker Compose (1 vCPU / 1 GB RAM is plenty for this test volume);
+- a DNS name (A/AAAA record) pointing at it;
+- inbound ports 80 and 443 open.
+
+`docker-compose.prod.yml` starts three services: MongoDB, uReport and Caddy.
+Caddy obtains a Let's Encrypt certificate for `UREPORT_DOMAIN`, redirects http
+to https and sends HSTS; uReport and MongoDB publish no host ports.
+
+```bash
+# on the server, with the repo checked out (or just these three files)
+cat > .env.prod <<'EOF'
+UREPORT_DOMAIN=ureport.example.com
+UREPORT_ADMIN_EMAIL=admin@example.com
+UREPORT_ADMIN_PASSWORD=<at least 16 random characters>
+EOF
+docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+```
+
+Keep `.env.prod` out of version control (it is git-ignored). Like the local
+instance, the admin credentials are only applied on the first start, when the
+database is empty; changing the variable later does not rotate the account.
+
+Then create the `operator` user against the public URL and generate its token:
+
+```bash
+BASE=https://ureport.example.com
+
+curl -c admin.jar -X POST $BASE/api/login -H 'Content-Type: application/json' \
+  -d '{"username":"admin","password":"<admin password>"}'
+
+curl -b admin.jar -X POST $BASE/api/signup \
+  -H 'Content-Type: application/json' \
+  -d '{"username":"ci-pusher","email":"ci-pusher@example.com","password":"<strong password>","adminCreated":true,"role":"operator"}'
+
+curl -c op.jar -X POST $BASE/api/login -H 'Content-Type: application/json' \
+  -d '{"username":"ci-pusher","password":"<strong password>"}'
+
+curl -b op.jar -X POST $BASE/api/token -H 'Content-Type: application/json' -d '{}'
+# → {"apiToken":"…"} — this is the value for UREPORT_API_TOKEN
+```
+
+Finally set the repository secrets and variables (see *CI* below) and the
+dashboard will link to `https://ureport.example.com/nextgen/overview`.
+
+Operational notes:
+
+- **TLS is mandatory.** Outside localhost the client refuses plain http, and it
+  validates the certificate: a self-signed certificate needs
+  `NODE_EXTRA_CA_CERTS` on the runner (not recommended). Use a real DNS name;
+  Let's Encrypt requires ports 80/443 to be reachable.
+- **Why `NODE_ENV=docker` and not `production`:** upstream marks the session
+  cookie `Secure` only in `production` and never enables Express' `trust
+  proxy`, so behind Caddy the browser would never send the cookie back and the
+  login would loop. Caddy provides https + HSTS instead.
+- **Backups:** the data lives in the `ureport_mongo` volume. Export it with
+  `docker compose -f docker-compose.prod.yml exec -T ureport-db mongodump
+  --archive=/tmp/ureport.archive` and copy the file off the host.
+- **Rotation:** `POST /api/token` replaces the token (the old one stops working
+  immediately); `DELETE /api/token` revokes it. After rotating, update the
+  `UREPORT_API_TOKEN` secret.
+- **Retention:** uReport never expires tests or builds; schedule a periodic
+  purge (or a fresh database) if the volume grows.
+
 ## Commands
 
 ```bash
@@ -166,12 +241,21 @@ that generated it, so CI regenerates and publishes it but never commits it.
 
 ## CI
 
-Set these repository secrets and variables:
+`UREPORT_URL` must point at an instance the runner can reach: a laptop is not
+enough, so deploy one first (see *Deploying a public instance*). Then set these
+repository secrets and variables:
 
 - secret `UREPORT_URL` — base URL of the uReport instance.
 - secret `UREPORT_API_TOKEN` — API token of the `operator` user.
 - variable `UREPORT_PRODUCT` (default `agentic-qa-workflow`).
 - variable `UREPORT_TYPE` (default `E2E`).
+
+```bash
+gh secret set UREPORT_URL --body "https://ureport.example.com"
+gh secret set UREPORT_API_TOKEN --body "<operator token>"
+gh variable set UREPORT_PRODUCT --body "agentic-qa-workflow"
+gh variable set UREPORT_TYPE --body "E2E"
+```
 
 `ci.yml` pushes each pipeline run to uReport; `dashboard.yml` refreshes
 `reporting/ureport-history.json` and publishes it to GitHub Pages next to
