@@ -23,7 +23,16 @@ async function main(): Promise<void> {
     return;
   }
 
-  const analytics = await fetchAnalytics();
+  // The dashboard is published even when uReport is unavailable, keeping the
+  // last analytics snapshot (if any) instead of failing the whole deployment.
+  let analytics: Awaited<ReturnType<typeof fetchAnalytics>>;
+  try {
+    analytics = await fetchAnalytics();
+  } catch (err) {
+    console.warn(`[ureport] Analytics refresh skipped: ${(err as Error).message}`);
+    return;
+  }
+
   fs.mkdirSync(path.dirname(HISTORY_PATH), { recursive: true });
   fs.writeFileSync(HISTORY_PATH, JSON.stringify(analytics, null, 2) + "\n");
 
