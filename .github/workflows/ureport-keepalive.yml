@@ -1,0 +1,16 @@
+name: uReport keepalive
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Ping uReport login
+        run: |
+          curl -sS -o /dev/null -w "http=%{http_code} time=%{time_total}s\n" \
+            --max-time 60 "${{ secrets.UREPORT_URL }}/nextgen/login" || true
