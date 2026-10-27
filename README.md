@@ -169,10 +169,11 @@ Steps and the four `gh secret`/`gh variable` commands:
 | Agentic quality dashboard (KPIs, decision/classification trends) | [agentic-qa-workflow](https://mtsncls.github.io/agentic-qa-workflow/) |
 | Allure execution report (steps, retries, attachments) | [agentic-qa-workflow/allure](https://mtsncls.github.io/agentic-qa-workflow/allure/) |
 
-uReport is a server, not a static report, so it is not published to Pages:
-the dashboard embeds its cross-build analytics and links to the instance
-configured in `UREPORT_URL`. Without that variable the section is hidden and
-no link is rendered.
+uReport runs on its own instance; the dashboard links to the instance
+configured in `UREPORT_URL` and now also publishes a public snapshot
+(`ureport-snapshot.json`) of its lanes to GitHub Pages so the data is
+visible without logging into the uReport UI. Without that variable the
+section falls back to the snapshot if present.
 
 Local preview:
 
