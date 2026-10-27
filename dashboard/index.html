@@ -812,8 +812,8 @@ async function renderUreport() {
       (snap.product || '') + ' / ' + (snap.type || '') + ' · ' + snap.lanes.length + ' lanes • Snapshot ' + fmtDate(snap.fetchedAt);
     
     const grids = section.querySelectorAll('.grid-2');
-    grids.forEach(g => { 
-      g.innerHTML = 
+    if (grids[0]) {
+      grids[0].innerHTML = 
         '<div class="card"><h2>📍 Active Test Lanes</h2><div class="lane-grid">' +
         snap.lanes.slice(0, 12).map(l => {
           const badges = [];
@@ -830,7 +830,10 @@ async function renderUreport() {
         '<p>Click <strong>"Open uReport"</strong> to access the full UI with interactive analytics, build history, and detailed test insights.</p>' +
         '<div class="info-box">📊 ' + snap.lanes.length + ' active lanes across different configurations</div>' +
         '</div></div>';
-    });
+    }
+    if (grids[1]) {
+      grids[1].style.display = 'none';
+    }
   }
 }
 
