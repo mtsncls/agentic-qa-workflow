@@ -784,6 +784,41 @@ async function renderUreport() {
   const link = document.getElementById('ureport-link');
   const section = document.getElementById('ureport-section');
 
+  // Show snapshot lanes if available
+  if (snap && snap.lanes && snap.lanes.length) {
+    link.href = snap.baseUrl || (data && (data.appUrl || data.serverUrl)) || '#';
+    link.style.display = 'inline-flex';
+    section.style.display = 'block';
+    document.getElementById('ureport-meta').textContent =
+      (snap.product || (data && data.product) || '') + ' / ' + (snap.type || (data && data.type) || '') + ' · ' + snap.lanes.length + ' lanes • Snapshot ' + fmtDate(snap.fetchedAt);
+    
+    // Remove all existing grids in uReport section
+    section.querySelectorAll('.grid-2').forEach(g => g.remove());
+    
+    // Add single grid with lanes
+    const newGrid = document.createElement('div');
+    newGrid.className = 'grid-2';
+    newGrid.innerHTML = 
+      '<div class="card"><h2>📍 Active Test Lanes</h2><div class="lane-grid">' +
+      snap.lanes.slice(0, 12).map(l => {
+        const badges = [];
+        if (l.team) badges.push('<span class="badge badge-team">' + l.team + '</span>');
+        if (l.browser) badges.push('<span class="badge badge-browser">' + l.browser + '</span>');
+        if (l.extras && l.extras.app) badges.push('<span class="badge badge-app">' + l.extras.app.replace('https://', '').replace('http://', '') + '</span>');
+        if (!l.team && !l.browser && (!l.extras || !l.extras.app)) badges.push('<span class="badge badge-default">' + l.product + '/' + l.type + '</span>');
+        return '<div class="lane-card"><div class="lane-title">' + l.product + ' / ' + l.type + '</div><div class="lane-meta">' + badges.join('') + '</div></div>';
+      }).join('') +
+      (snap.lanes.length > 12 ? '<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); font-size: 12px; padding: 8px;">… and ' + (snap.lanes.length - 12) + ' more lanes</div>' : '') +
+      '</div></div>' +
+      '<div class="card"><h2>💡 About This Snapshot</h2><div style="padding: 8px 0; line-height: 1.6; color: var(--text-secondary); font-size: 13px;">' +
+      '<p style="margin-top: 0;">This data is pulled directly from the uReport API and published to GitHub Pages for public visibility.</p>' +
+      '<p>Click <strong>"Open uReport"</strong> to access the full UI with interactive analytics, build history, and detailed test insights.</p>' +
+      '<div class="info-box">📊 ' + snap.lanes.length + ' active lanes across different configurations</div>' +
+      '</div></div>';
+    section.appendChild(newGrid);
+    return;
+  }
+
   if (data) {
     const target = data.appUrl || data.serverUrl;
     if (target) {
@@ -803,8 +838,6 @@ async function renderUreport() {
       return;
     }
   }
-
-  if (snap && snap.lanes && snap.lanes.length) {
     link.href = snap.baseUrl || '#';
     link.style.display = 'inline-flex';
     section.style.display = 'block';
