@@ -19,7 +19,8 @@
     "format": "prettier --write \"**/*.ts\"",
     "show-report": "playwright show-report",
     "allure:serve": "allure generate allure-results -o allure-report --clean && allure open allure-report",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "ureport:snapshot": "tsx src/reporting/ureport-snapshot.ts"
   },
   "bin": {
     "agentic-qa": "./src/index.ts"

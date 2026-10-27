@@ -279,6 +279,17 @@ async function loadUreport() {
   return null;
 }
 
+async function loadUreportSnapshot() {
+  const candidates = ['./ureport-snapshot.json', '../reporting/ureport-snapshot.json', './reporting/ureport-snapshot.json'];
+  for (const url of candidates) {
+    try {
+      const res = await fetch(url, { cache: 'no-store' });
+      if (res.ok) return await res.json();
+    } catch (e) { /* try next */ }
+  }
+  return null;
+}
+
 function renderEmpty() {
   document.getElementById('content').innerHTML =
     '<div class="empty">No runs yet. Run <code>npm run report</code> after a pipeline run to populate reporting/metrics-history.json.</div>';
@@ -476,28 +487,42 @@ function renderRiskTable(history) {
 
 async function renderUreport() {
   const data = await loadUreport();
-  if (!data) return;
-
+  const snap = await loadUreportSnapshot();
   const link = document.getElementById('ureport-link');
-  const target = data.appUrl || data.serverUrl;
-  if (target) {
-    link.href = target;
-    link.style.display = 'inline-block';
+  const section = document.getElementById('ureport-section');
+
+  if (data) {
+    const target = data.appUrl || data.serverUrl;
+    if (target) {
+      link.href = target;
+      link.style.display = 'inline-block';
+    }
+    const hasData = (data.passRateHistory || []).length || (data.topFailures || []).length ||
+                    (data.slowestTests || []).length || (data.buildDurationHistory || []).length;
+    if (hasData) {
+      section.style.display = 'block';
+      document.getElementById('ureport-meta').textContent =
+        data.product + ' / ' + data.type + ' · refreshed ' + fmtDate(data.generatedAt);
+      renderPassRateChart(data.passRateHistory || []);
+      renderBuildDurationChart(data.buildDurationHistory || []);
+      renderTopFailuresChart(data.topFailures || []);
+      renderSlowestChart(data.slowestTests || []);
+      return;
+    }
   }
 
-  const section = document.getElementById('ureport-section');
-  const hasData = (data.passRateHistory || []).length || (data.topFailures || []).length ||
-                  (data.slowestTests || []).length || (data.buildDurationHistory || []).length;
-  if (!hasData) return;
-  section.style.display = 'block';
-
-  document.getElementById('ureport-meta').textContent =
-    data.product + ' / ' + data.type + ' · refreshed ' + fmtDate(data.generatedAt);
-
-  renderPassRateChart(data.passRateHistory || []);
-  renderBuildDurationChart(data.buildDurationHistory || []);
-  renderTopFailuresChart(data.topFailures || []);
-  renderSlowestChart(data.slowestTests || []);
+  if (snap && snap.lanes && snap.lanes.length) {
+    link.href = snap.baseUrl || '#';
+    link.style.display = 'inline-block';
+    section.style.display = 'block';
+    document.getElementById('ureport-meta').textContent =
+      (snap.product || '') + ' / ' + (snap.type || '') + ' · lanes: ' + snap.lanes.length + ' · snapshot ' + fmtDate(snap.fetchedAt);
+    // Replace charts area with a simple summary
+    const grids = section.querySelectorAll('.grid-2');
+    grids.forEach(g => { g.innerHTML = '<div class="card"><h2>UReport lanes</h2><div style="padding:12px;font-size:13px;line-height:1.6;">' +
+      snap.lanes.slice(0,20).map(l => (l.product+'/'+l.type + (l.team?' · '+l.team:'') + (l.browser?' · '+l.browser:'') + (l.stage?' · '+l.stage:'') + (l.extras && l.extras.app ? ' · '+l.extras.app : ''))).join('<br/>') +
+      (snap.lanes.length > 20 ? '<br/>…and ' + (snap.lanes.length-20) + ' more' : '') + '</div></div><div class="card"><h2>Accessible snapshot</h2><div style="padding:12px;font-size:13px;line-height:1.6;">Data pulled from uReport API and published in the repo. Click "Open uReport" to access the full UI.</div></div>'; });
+  }
 }
 
 function renderPassRateChart(points) {

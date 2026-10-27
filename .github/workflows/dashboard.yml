@@ -82,6 +82,14 @@ jobs:
           UREPORT_TYPE: ${{ vars.UREPORT_TYPE }}
         run: npm run ureport:analytics
 
+      - name: Publish uReport snapshot (public)
+        env:
+          UREPORT_URL: ${{ secrets.UREPORT_URL }}
+          UREPORT_API_TOKEN: ${{ secrets.UREPORT_API_TOKEN }}
+          UREPORT_PRODUCT: ${{ vars.UREPORT_PRODUCT }}
+          UREPORT_TYPE: ${{ vars.UREPORT_TYPE }}
+        run: npm run ureport:snapshot || true
+
       - name: Commit updated history
         run: |
           git config user.name "github-actions[bot]"
@@ -112,6 +120,9 @@ jobs:
           cp reporting/metrics-history.json _site/metrics-history.json
           if [ -f reporting/ureport-history.json ]; then
             cp reporting/ureport-history.json _site/ureport-history.json
+          fi
+          if [ -f reporting/ureport-snapshot.json ]; then
+            cp reporting/ureport-snapshot.json _site/ureport-snapshot.json
           fi
           if [ -d allure-report ]; then
             mkdir -p _site/allure
