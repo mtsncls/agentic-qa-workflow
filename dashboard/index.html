@@ -137,12 +137,15 @@ body {
   height: 250px;
   margin-bottom: 20px;
   position: relative;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 /* Ensure charts respect container dimensions */
 canvas {
   max-width: 100% !important;
   height: auto !important;
+  width: 100% !important;
 }
 
 .table-container {
@@ -547,7 +550,9 @@ function renderKpis(history) {
       // Set explicit chart dimensions
       layout: {
         padding: 10
-      }
+      },
+      // Limit the canvas dimensions to prevent extreme sizing
+      aspectRatio: 1.2
     }
   });
 
@@ -601,7 +606,9 @@ function renderKpis(history) {
       // Set explicit chart dimensions
       layout: {
         padding: 10
-      }
+      },
+      // Limit the canvas dimensions to prevent extreme sizing
+      aspectRatio: 1.2
     }
   });
 
@@ -676,10 +683,14 @@ function renderKpis(history) {
           intersect: false
         }
       },
-      // Set chart dimensions
+      // Set chart dimensions with explicit limits
       responsive: true,
       maintainAspectRatio: true,
-      aspectRatio: 2.5
+      aspectRatio: 2.5,
+      // Limit maximum canvas size for performance
+      animation: {
+        duration: 0 // Disable animations for better performance
+      }
     }
   });
 
@@ -737,10 +748,14 @@ function renderKpis(history) {
           }
         }
       },
-      // Set chart dimensions
+      // Set chart dimensions with explicit limits
       responsive: true,
       maintainAspectRatio: true,
-      aspectRatio: 2.5
+      aspectRatio: 2.5,
+      // Limit maximum canvas size for performance
+      animation: {
+        duration: 0 // Disable animations for better performance
+      }
     }
   });
 
@@ -791,10 +806,14 @@ function renderKpis(history) {
           }
         }
       },
-      // Set chart dimensions
+      // Set chart dimensions with explicit limits
       responsive: true,
       maintainAspectRatio: true,
-      aspectRatio: 2.5
+      aspectRatio: 1.8,
+      // Limit maximum canvas size for performance
+      animation: {
+        duration: 0 // Disable animations for better performance
+      }
     }
   });
 
@@ -838,10 +857,14 @@ function renderKpis(history) {
           }
         }
       },
-      // Set chart dimensions
+      // Set chart dimensions with explicit limits
       responsive: true,
       maintainAspectRatio: true,
-      aspectRatio: 2.5
+      aspectRatio: 1.8,
+      // Limit maximum canvas size for performance
+      animation: {
+        duration: 0 // Disable animations for better performance
+      }
     }
   });
 
