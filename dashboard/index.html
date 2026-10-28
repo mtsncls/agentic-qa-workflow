@@ -139,6 +139,7 @@ body {
   position: relative;
   max-width: 100%;
   overflow: hidden;
+  min-width: 0; /* Prevents container from expanding beyond available space */
 }
 
 /* Ensure charts respect container dimensions */
@@ -146,6 +147,7 @@ canvas {
   max-width: 100% !important;
   height: auto !important;
   width: 100% !important;
+  max-height: 100% !important;
 }
 
 .table-container {
@@ -547,12 +549,15 @@ function renderKpis(history) {
           }
         }
       },
-      // Set explicit chart dimensions
+      // Set explicit chart dimensions with tight constraints
       layout: {
         padding: 10
       },
-      // Limit the canvas dimensions to prevent extreme sizing
-      aspectRatio: 1.2
+      aspectRatio: 1.0, // Square ratio for doughnut charts to prevent oversized rendering
+      // Limit the rendering area to prevent memory issues
+      animation: {
+        duration: 0
+      }
     }
   });
 
@@ -603,12 +608,15 @@ function renderKpis(history) {
           }
         }
       },
-      // Set explicit chart dimensions
+      // Set explicit chart dimensions with tight constraints
       layout: {
         padding: 10
       },
-      // Limit the canvas dimensions to prevent extreme sizing
-      aspectRatio: 1.2
+      aspectRatio: 1.0, // Square ratio for doughnut charts to prevent oversized rendering
+      // Limit the rendering area to prevent memory issues
+      animation: {
+        duration: 0
+      }
     }
   });
 
@@ -945,21 +953,15 @@ function renderKpis(history) {
   }
 })();
 
-// Add chart tooltips functionality
-document.addEventListener('DOMContentLoaded', function() {
-  // Initialize tooltips for charts
-  const canvases = document.querySelectorAll('canvas');
-  
-  canvases.forEach(canvas => {
-    canvas.addEventListener('mousemove', function(e) {
-      // This functionality would be enhanced with custom tooltip implementation
-    });
-    
-    canvas.addEventListener('mouseout', function(e) {
-      // Hide custom tooltips if any
-    });
+  // Ensure chart containers have strict constraints and prevent memory leaks
+  document.querySelectorAll('.chart-container').forEach(container => {
+    const canvas = container.querySelector('canvas');
+    if (canvas) {
+      // Set explicit dimensions for the canvas in the context
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+    }
   });
-});
 </script>
 </body>
 </html>
