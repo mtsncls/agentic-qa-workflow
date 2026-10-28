@@ -2,418 +2,352 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Agentic QA Workflow — Quality Dashboard</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Agentic QA Workflow Dashboard - Real-time test performance and decision metrics">
+<title>Agentic QA Dashboard</title>
 <style>
-  :root {
-    --bg: #0a0d14;
-    --surface: #101622;
-    --surface-2: #161d2e;
-    --surface-3: #1e2538;
-    --border: #2a3447;
-    --border-light: #343d54;
-    --text: #f1f5f9;
-    --text-secondary: #cbd5e1;
-    --text-muted: #94a3b8;
-    --accent: #3b82f6;
-    --accent-hover: #2563eb;
-    --success: #10b981;
-    --warning: #f59e0b;
-    --danger: #ef4444;
-    --purple: #a855f7;
-    --info: #06b6d4;
-  }
-  [data-theme="light"] {
-    --bg: #f8fafc;
-    --surface: #ffffff;
-    --surface-2: #f1f5f9;
-    --surface-3: #e2e8f0;
-    --border: #e2e8f0;
-    --border-light: #cbd5e1;
-    --text: #0f172a;
-    --text-secondary: #334155;
-    --text-muted: #64748b;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    background: radial-gradient(ellipse at top, rgba(59, 130, 246, 0.08) 0%, transparent 50%), var(--bg);
-    color: var(--text);
-    font-family: 'Inter', -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    padding: 2rem 1.5rem 4rem;
-    line-height: 1.6;
-  }
-  .wrap { max-width: 1200px; margin: 0 auto; }
-  header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 2rem;
-    gap: 1rem;
-    flex-wrap: wrap;
-  }
-  .header-content h1 { 
-    font-size: 28px; 
-    font-weight: 700; 
-    margin: 0 0 6px; 
-    background: linear-gradient(135deg, var(--text) 0%, var(--text-secondary) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  .subtitle { color: var(--text-secondary); font-size: 14px; margin: 0; }
-  .header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-  .btn {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text-secondary);
-    border-radius: 8px;
-    padding: 8px 14px;
-    font-size: 13px;
-    cursor: pointer;
-    text-decoration: none;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-family: inherit;
-  }
-  .btn:hover { 
-    background: var(--surface-2);
-    border-color: var(--border-light);
-    color: var(--text);
-    transform: translateY(-1px);
-  }
-  .btn-primary {
-    background: linear-gradient(135deg, var(--accent) 0%, #2563eb 100%);
-    border: 1px solid var(--accent);
-    color: white;
-  }
-  .btn-primary:hover { 
-    background: linear-gradient(135deg, var(--accent-hover) 0%, #1d4ed8 100%);
-    filter: brightness(1.05);
-    color: white;
-  }
-  .section-head {
-    display: flex; align-items: baseline; justify-content: space-between;
-    gap: 1rem; flex-wrap: wrap; margin: 2.5rem 0 1rem;
-  }
-  .section-head h2 { 
-    font-size: 18px; 
-    font-weight: 600; 
-    margin: 0; 
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .section-head span { font-size: 12px; color: var(--text-muted); }
-  .kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 14px;
-    margin-bottom: 2rem;
-  }
-  .kpi {
-    background: linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 18px 20px;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.2s ease;
-  }
-  .kpi:hover {
-    border-color: var(--border-light);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
-  }
-  .kpi::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, var(--accent), var(--success));
-  }
-  .kpi .label { font-size: 11px; color: var(--text-secondary); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
-  .kpi .value { font-size: 32px; font-weight: 700; margin-bottom: 4px; }
-  .kpi .sub { font-size: 11px; color: var(--text-muted); }
-  .kpi-trend { 
-    position: absolute;
-    top: 18px;
-    right: 20px;
-    font-size: 11px;
-    color: var(--success);
-    font-weight: 600;
-  }
+:root {
+  --primary-color: #3b82f6;
+  --success-color: #10b981;
+  --danger-color: #ef4444;
+  --warning-color: #f59e0b;
+  --info-color: #6366f1;
+  --background: #0f172a;
+  --card-bg: #1e293b;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --border-radius: 8px;
+  --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --transition: all 0.3s ease;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--background);
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #334155;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin-top: 5px;
+}
+
+.card {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--box-shadow);
+  transition: var(--transition);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.card-title {
+  font-size: 1.3rem;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-title i {
+  color: var(--primary-color);
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.kpi-card {
+  background: rgba(30, 41, 59, 0.7);
+  border-radius: var(--border-radius);
+  padding: 15px;
+  text-align: center;
+  transition: var(--transition);
+}
+
+.kpi-card:hover {
+  transform: scale(1.02);
+  background: rgba(30, 41, 59, 0.9);
+}
+
+.kpi-value {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 10px 0;
+}
+
+.kpi-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.kpi-trend {
+  font-size: 1.2rem;
+  margin-left: 5px;
+}
+
+.trend-up {
+  color: var(--success-color);
+}
+
+.trend-down {
+  color: var(--danger-color);
+}
+
+.chart-container {
+  height: 300px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 15px 0;
+}
+
+th, td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #334155;
+}
+
+th {
+  background-color: rgba(56, 73, 90, 0.5);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+tr:hover {
+  background-color: rgba(56, 73, 90, 0.2);
+}
+
+.badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  display: inline-block;
+  margin: 2px;
+}
+
+.badge-bug {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.badge-flaky {
+  background-color: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+}
+
+.badge-ok {
+  background-color: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+
+.badge-retry {
+  background-color: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+}
+
+.badge-comment {
+  background-color: rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+}
+
+.badge-escalate {
+  background-color: rgba(168, 85, 247, 0.2);
+  color: #a855f7;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-secondary);
+}
+
+.empty-state i {
+  font-size: 3rem;
+  margin-bottom: 15px;
+  display: block;
+  color: #64748b;
+}
+
+.empty-state p {
+  font-size: 1.1rem;
+}
+
+.btn {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-weight: 600;
+  transition: var(--transition);
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn:hover {
+  background-color: #2563eb;
+  transform: translateY(-2px);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--primary-color);
+}
+
+.btn-outline:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
   .grid-2 {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 18px;
-    margin-bottom: 18px;
+    grid-template-columns: 1fr;
   }
-  @media (max-width: 980px) { .grid-2 { grid-template-columns: 1fr; } }
-  .grid-3 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 18px;
-    margin-bottom: 18px;
+  
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
-  @media (max-width: 780px) { .grid-3 { grid-template-columns: 1fr; } }
-  .donut-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 18px;
-    margin-bottom: 18px;
+  
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
   }
-  @media (max-width: 680px) { .donut-grid { grid-template-columns: 1fr; } }
-  .card {
-    background: linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px 22px;
-    transition: all 0.2s ease;
-  }
-  .card:hover {
-    border-color: var(--border-light);
-  }
-  .card h2 { 
-    font-size: 14px; 
-    font-weight: 600; 
-    margin: 0 0 16px; 
-    color: var(--text); 
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .chart-wrap { position: relative; width: 100%; }
-  .lane-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 12px;
-  }
-  .lane-card {
-    background: var(--surface-3);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 16px;
-    transition: all 0.2s ease;
-  }
-  .lane-card:hover {
-    border-color: var(--accent);
-    background: linear-gradient(90deg, rgba(59, 130, 246, 0.08) 0%, var(--surface-3) 100%);
-    transform: translateX(4px);
-  }
-  .lane-card .lane-title {
-    font-weight: 600;
-    font-size: 13px;
-    margin-bottom: 8px;
-    color: var(--text);
-  }
-  .lane-card .lane-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    font-size: 11px;
-  }
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 3px 8px;
-    border-radius: 6px;
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-  }
-  .badge-team { background: rgba(168, 85, 247, 0.15); color: var(--purple); border: 1px solid rgba(168, 85, 247, 0.3); }
-  .badge-browser { background: rgba(6, 182, 212, 0.15); color: var(--info); border: 1px solid rgba(6, 182, 212, 0.3); }
-  .badge-app { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
-  .badge-default { background: rgba(148, 163, 184, 0.15); color: var(--text-muted); border: 1px solid rgba(148, 163, 184, 0.3); }
-  .badge-bug { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
-  .badge-flaky { background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); }
-  .badge-ok { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
-  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); }
-  th { color: var(--text-muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; background: var(--surface-2); }
-  tbody tr { transition: background 0.2s ease; }
-  tbody tr:hover { background: var(--surface-2); }
-  td a { color: var(--accent); text-decoration: none; font-weight: 500; }
-  td a:hover { text-decoration: underline; }
-  .empty { color: var(--text-muted); font-size: 13px; padding: 3rem 0; text-align: center; background: var(--surface-2); border-radius: 8px; }
-  .table-scroll { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
-  .info-box {
-    margin-top: 16px; 
-    padding: 12px 16px; 
-    background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%); 
-    border: 1px solid rgba(59, 130, 246, 0.3); 
-    border-radius: 8px; 
-    font-size: 12px; 
-    color: var(--text-secondary);
-    line-height: 1.5;
-  }
+}
+
+/* Theme toggle */
+.theme-toggle {
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+}
+
+.theme-toggle:hover {
+  background-color: rgba(56, 73, 90, 0.2);
+}
+
+/* Chart tooltips */
+.chart-tooltip {
+  position: absolute;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid #334155;
+  border-radius: var(--border-radius);
+  padding: 10px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  max-width: 300px;
+}
+
+.chart-tooltip.show {
+  opacity: 1;
+}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div class="header-content">
-      <h1>Agentic QA Workflow</h1>
-      <p class="subtitle">Quality dashboard • Test health and agentic decision metrics</p>
+<div class="container">
+  <div class="header">
+    <div>
+      <h1 class="title">Agentic QA Dashboard</h1>
+      <p class="subtitle">Real-time test performance and automated decision metrics</p>
     </div>
-    <div class="header-actions">
-      <a id="ureport-link" class="btn btn-primary" href="#" target="_blank" rel="noopener">Open uReport ↗</a>
-      <button id="theme-toggle" class="btn" onclick="toggleTheme()">🌙 Dark mode</button>
-    </div>
-  </header>
-
-  <div id="content">
-    <div class="kpi-grid" id="kpis"></div>
-
-    <div class="donut-grid">
-      <div class="card">
-        <h2>📊 Test Results Overview</h2>
-        <div class="chart-wrap" style="height: 240px;">
-          <canvas id="overviewChart" role="img" aria-label="Donut chart of test results overview"></canvas>
-        </div>
-      </div>
-      <div class="card">
-        <h2>🎯 Decision Breakdown</h2>
-        <div class="chart-wrap" style="height: 240px;">
-          <canvas id="decisionOverviewChart" role="img" aria-label="Donut chart of decision breakdown"></canvas>
-        </div>
-      </div>
-    </div>
-
-    <div class="grid-2">
-      <div class="card">
-        <h2>📈 Test Results Per Run</h2>
-        <div class="chart-wrap" style="height: 280px;">
-          <canvas id="testsChart" role="img" aria-label="Stacked bar chart of passed, failed, and flaky tests per pipeline run"></canvas>
-        </div>
-      </div>
-      <div class="card">
-        <h2>🧠 Analyst Confidence Trend</h2>
-        <div class="chart-wrap" style="height: 280px;">
-          <canvas id="confidenceChart" role="img" aria-label="Line chart of average analyst confidence score per run"></canvas>
-        </div>
-      </div>
-    </div>
-
-    <div class="grid-3">
-      <div class="card">
-        <h2>⚡ Decision Engine Actions</h2>
-        <div class="chart-wrap" style="height: 220px;">
-          <canvas id="actionsChart" role="img" aria-label="Doughnut chart of decision engine actions"></canvas>
-        </div>
-      </div>
-      <div class="card">
-        <h2>🔍 Failure Classifications</h2>
-        <div class="chart-wrap" style="height: 220px;">
-          <canvas id="classChart" role="img" aria-label="Doughnut chart of failure classifications"></canvas>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>⚠️ Business Risk Coverage</h2>
-      <div class="chart-wrap" style="height: 240px;">
-        <canvas id="riskChart" role="img" aria-label="Stacked bar chart of passed, failed and flaky tests per business-risk tag"></canvas>
-      </div>
-      <div class="table-scroll" style="margin-top: 16px;">
-        <table>
-          <thead>
-            <tr>
-              <th>Risk Tag</th>
-              <th>Criteria (Cov/Total)</th>
-              <th>Tests (P/F/Flaky)</th>
-              <th>Bugs</th>
-              <th>Avg Confidence</th>
-            </tr>
-          </thead>
-          <tbody id="riskTable"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>📋 Recent Runs</h2>
-      <div class="table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th>Ticket</th>
-              <th>Date</th>
-              <th>Tests</th>
-              <th>Coverage</th>
-              <th>Decisions</th>
-              <th>Bugs</th>
-              <th>Avg Confidence</th>
-            </tr>
-          </thead>
-          <tbody id="runsTable"></tbody>
-        </table>
-      </div>
-    </div>
+    <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()">
+      🌙 Dark
+    </button>
   </div>
 
-  <div id="ureport-section" style="display: none;">
-    <div class="section-head">
-      <h2>🔗 Cross-Build Analytics — uReport</h2>
-      <span id="ureport-meta"></span>
-    </div>
-    <div class="grid-2">
-      <div class="card">
-        <h2>📈 Pass Rate Per Build</h2>
-        <div class="chart-wrap" style="height: 240px;">
-          <canvas id="passRateChart" role="img" aria-label="Line chart of the pass rate per uReport build"></canvas>
-        </div>
-      </div>
-      <div class="card">
-        <h2>⏱️ Build Duration</h2>
-        <div class="chart-wrap" style="height: 240px;">
-          <canvas id="buildDurationChart" role="img" aria-label="Bar chart of the duration of each uReport build"></canvas>
-        </div>
-      </div>
-    </div>
-    <div class="grid-2">
-      <div class="card">
-        <h2>🔥 Top Failures Across Builds</h2>
-        <div class="chart-wrap" style="height: 240px;">
-          <canvas id="topFailuresChart" role="img" aria-label="Bar chart of the tests that failed most often across builds"></canvas>
-        </div>
-      </div>
-      <div class="card">
-        <h2>🐌 Slowest Tests Across Builds</h2>
-        <div class="chart-wrap" style="height: 240px;">
-          <canvas id="slowestChart" role="img" aria-label="Bar chart of the average duration of the slowest tests"></canvas>
-        </div>
-      </div>
+  <div id="content">
+    <div class="empty-state">
+      <i>📊</i>
+      <h2>Loading dashboard data...</h2>
+      <p>Run <code>npm run report</code> to populate dashboard metrics</p>
     </div>
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 function toggleTheme() {
   const html = document.documentElement;
   const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
   html.setAttribute('data-theme', next);
+  
   const btn = document.getElementById('theme-toggle');
-  btn.textContent = next === 'dark' ? '🌙 Dark mode' : '☀️ Light mode';
+  btn.textContent = next === 'dark' ? '🌙 Dark' : '☀️ Light';
 }
 
 function fmtDate(iso) {
+  if (!iso) return '—';
   const d = new Date(iso);
-  return isNaN(d) ? '—' : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: '2-digit' });
+  if (isNaN(d)) return '—';
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: '2-digit' });
 }
 
-function pct(n, d) { return d ? Math.round((n / d) * 100) : 0; }
+function pct(n, d) { 
+  return d ? Math.round((n / d) * 100) : 0; 
+}
 
 async function loadHistory() {
   const candidates = ['./metrics-history.json', '../reporting/metrics-history.json', './reporting/metrics-history.json'];
@@ -450,7 +384,12 @@ async function loadUreportSnapshot() {
 
 function renderEmpty() {
   document.getElementById('content').innerHTML =
-    '<div class="empty">No runs yet. Run <code>npm run report</code> after a pipeline run to populate reporting/metrics-history.json.</div>';
+    '<div class="empty-state">' +
+    '<i>📊</i>' +
+    '<h2>No runs yet</h2>' +
+    '<p>Run <code>npm run report</code> after a pipeline run to populate reporting/metrics-history.json.</p>' +
+    '<a href="#" onclick="location.reload()" class="btn">Refresh</a>' +
+    '</div>';
 }
 
 function renderKpis(history) {
@@ -475,14 +414,92 @@ function renderKpis(history) {
     { label: 'Avg Analyst Confidence', value: avgConf != null ? avgConf.toFixed(2) : '—', trend: null },
   ];
 
-  document.getElementById('kpis').innerHTML = kpis.map(k =>
-    '<div class="kpi">' +
-    (k.trend ? '<div class="kpi-trend">' + k.trend + '</div>' : '') +
-    '<div class="label">' + k.label + '</div>' +
-    '<div class="value">' + k.value + '</div>' +
-    (k.sub ? '<div class="sub">' + k.sub + '</div>' : '') +
-    '</div>'
-  ).join('');
+  document.getElementById('content').innerHTML = `
+    <div class="kpi-grid">
+      ${kpis.map(k =>
+        '<div class="kpi-card">' +
+        (k.trend ? '<div class="kpi-trend"><span class="trend-up">' + k.trend + '</span></div>' : '') +
+        '<div class="kpi-label">' + k.label + '</div>' +
+        '<div class="kpi-value">' + k.value + '</div>' +
+        (k.sub ? '<div class="kpi-sub">' + k.sub + '</div>' : '') +
+        '</div>'
+      ).join('')}
+    </div>
+    
+    <div class="grid-2">
+      <div class="card">
+        <h2 class="card-title">Test Outcomes</h2>
+        <canvas id="overviewChart"></canvas>
+      </div>
+      
+      <div class="card">
+        <h2 class="card-title">Decision Actions Overview</h2>
+        <canvas id="decisionOverviewChart"></canvas>
+      </div>
+    </div>
+    
+    <div class="grid-2">
+      <div class="card">
+        <h2 class="card-title">Test Results Over Time</h2>
+        <canvas id="testsTrendChart"></canvas>
+      </div>
+      
+      <div class="card">
+        <h2 class="card-title">Analyst Confidence Trend</h2>
+        <canvas id="confidenceChart"></canvas>
+      </div>
+    </div>
+    
+    <div class="grid-2">
+      <div class="card">
+        <h2 class="card-title">Failure Classification</h2>
+        <canvas id="classificationChart"></canvas>
+      </div>
+      
+      <div class="card">
+        <h2 class="card-title">Decision Actions by Type</h2>
+        <canvas id="actionsChart"></canvas>
+      </div>
+    </div>
+    
+    <div class="card">
+      <h2 class="card-title">Recent Pipeline Runs</h2>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Ticket</th>
+              <th>Date</th>
+              <th>Tests</th>
+              <th>Coverage</th>
+              <th>Decisions</th>
+              <th>Bugs</th>
+              <th>Avg Conf</th>
+            </tr>
+          </thead>
+          <tbody id="runsTable"></tbody>
+        </table>
+      </div>
+    </div>
+    
+    <div class="card">
+      <h2 class="card-title">Business Risk Metrics</h2>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Risk Tag</th>
+              <th>Coverage</th>
+              <th>Tests</th>
+              <th>Bugs</th>
+              <th>Avg Conf</th>
+            </tr>
+          </thead>
+          <tbody id="riskTable"></tbody>
+        </table>
+      </div>
+    </div>
+  `;
 
   // Render overview donuts
   const ctxOverview = document.getElementById('overviewChart');
@@ -494,7 +511,7 @@ function renderKpis(history) {
         data: [totals.passed, totals.failed, totals.flaky],
         backgroundColor: ['#10b981', '#ef4444', '#f59e0b'],
         borderWidth: 2,
-        borderColor: getComputedStyle(document.documentElement).getPropertyValue('--surface').trim()
+        borderColor: getComputedStyle(document.documentElement).getPropertyValue('--card-bg').trim()
       }]
     },
     options: {
@@ -509,6 +526,15 @@ function renderKpis(history) {
             padding: 12,
             usePointStyle: true,
             font: { size: 11 }
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const total = context.dataset.data.reduce((a, b) => a + b, 0);
+              const percentage = ((context.raw / total) * 100).toFixed(1);
+              return `${context.label}: ${context.raw} (${percentage}%)`;
+            }
           }
         }
       }
@@ -516,25 +542,26 @@ function renderKpis(history) {
   });
 
   // Decision overview
-  const decisionTotals = { retry: 0, create_bug: 0, comment: 0, escalate: 0 };
+  const decisionTotals = { retry: 0, create_bug: 0, comment: 0, escalate: 0, none: 0 };
   history.forEach(r => {
     if (r.decisions?.byAction) {
       decisionTotals.retry += r.decisions.byAction.retry || 0;
       decisionTotals.create_bug += r.decisions.byAction.create_bug || 0;
       decisionTotals.comment += r.decisions.byAction.comment || 0;
       decisionTotals.escalate += r.decisions.byAction.escalate || 0;
+      decisionTotals.none += r.decisions.byAction.none || 0;
     }
   });
   const ctxDecision = document.getElementById('decisionOverviewChart');
   new Chart(ctxDecision, {
     type: 'doughnut',
     data: {
-      labels: ['Retry', 'Bug Created', 'Comment', 'Escalate'],
+      labels: ['Retry', 'Bug Created', 'Comment', 'Escalate', 'None'],
       datasets: [{
-        data: [decisionTotals.retry, decisionTotals.create_bug, decisionTotals.comment, decisionTotals.escalate],
-        backgroundColor: ['#f59e0b', '#ef4444', '#3b82f6', '#a855f7'],
+        data: [decisionTotals.retry, decisionTotals.create_bug, decisionTotals.comment, decisionTotals.escalate, decisionTotals.none],
+        backgroundColor: ['#f59e0b', '#ef4444', '#3b82f6', '#a855f7', '#64748b'],
         borderWidth: 2,
-        borderColor: getComputedStyle(document.documentElement).getPropertyValue('--surface').trim()
+        borderColor: getComputedStyle(document.documentElement).getPropertyValue('--card-bg').trim()
       }]
     },
     options: {
@@ -550,44 +577,98 @@ function renderKpis(history) {
             usePointStyle: true,
             font: { size: 11 }
           }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const total = context.dataset.data.reduce((a, b) => a + b, 0);
+              const percentage = ((context.raw / total) * 100).toFixed(1);
+              return `${context.label}: ${context.raw} (${percentage}%)`;
+            }
+          }
         }
       }
     }
   });
-}
 
-function renderTestsChart(history) {
-  const ctx = document.getElementById('testsChart');
-  new Chart(ctx, {
-    type: 'bar',
+  // Test results over time
+  const ctxTestsTrend = document.getElementById('testsTrendChart');
+  new Chart(ctxTestsTrend, {
+    type: 'line',
     data: {
       labels: history.map(r => fmtDate(r.startedAt)),
       datasets: [
-        { label: 'Passed', data: history.map(r => r.tests.passed || 0), backgroundColor: '#10b981', borderRadius: 4 },
-        { label: 'Failed', data: history.map(r => r.tests.failed || 0), backgroundColor: '#ef4444', borderRadius: 4 },
-        { label: 'Flaky', data: history.map(r => r.tests.flaky || 0), backgroundColor: '#f59e0b', borderRadius: 4 },
+        { 
+          label: 'Passed', 
+          data: history.map(r => r.tests.passed || 0), 
+          borderColor: '#10b981', 
+          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          fill: true,
+          tension: 0.4,
+          pointRadius: 3
+        },
+        { 
+          label: 'Failed', 
+          data: history.map(r => r.tests.failed || 0), 
+          borderColor: '#ef4444', 
+          backgroundColor: 'rgba(239, 68, 68, 0.1)',
+          fill: true,
+          tension: 0.4,
+          pointRadius: 3
+        },
+        { 
+          label: 'Flaky', 
+          data: history.map(r => r.tests.flaky || 0), 
+          borderColor: '#f59e0b', 
+          backgroundColor: 'rgba(245, 158, 11, 0.1)',
+          fill: true,
+          tension: 0.4,
+          pointRadius: 3
+        }
       ]
     },
     options: {
-      responsive: true, maintainAspectRatio: false,
+      responsive: true,
+      maintainAspectRatio: false,
       scales: { 
-        x: { grid: { display: false }, ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim() } }, 
-        y: { beginAtZero: true, ticks: { precision: 0, color: getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim() }, grid: { color: 'rgba(148, 163, 184, 0.1)' } } 
+        x: { 
+          grid: { display: false }, 
+          ticks: { 
+            color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim(),
+            maxRotation: 45,
+            minRotation: 45
+          } 
+        }, 
+        y: { 
+          beginAtZero: true, 
+          ticks: { 
+            precision: 0, 
+            color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim() 
+          },
+          grid: { color: 'rgba(148, 163, 184, 0.1)' } 
+        } 
       },
       plugins: { 
         legend: { 
           position: 'top',
-          labels: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim(), usePointStyle: true, padding: 16 } 
-        } 
+          labels: { 
+            color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim(), 
+            usePointStyle: true, 
+            padding: 16 
+          } 
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false
+        }
       }
     }
   });
-}
 
-function renderConfidenceChart(history) {
+  // Confidence trend chart
   const withConf = history.filter(r => r.avgConfidence != null && !isNaN(r.avgConfidence));
-  const ctx = document.getElementById('confidenceChart');
-  new Chart(ctx, {
+  const ctxConfidence = document.getElementById('confidenceChart');
+  new Chart(ctxConfidence, {
     type: 'line',
     data: {
       labels: withConf.map(r => fmtDate(r.startedAt)),
@@ -605,86 +686,143 @@ function renderConfidenceChart(history) {
       }]
     },
     options: {
-      responsive: true, maintainAspectRatio: false,
+      responsive: true,
+      maintainAspectRatio: false,
       scales: { 
-        y: { min: 0, max: 1, grid: { color: 'rgba(148, 163, 184, 0.1)' }, ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim(), stepSize: 0.2 } }, 
-        x: { grid: { display: false }, ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim() } } 
+        y: { 
+          min: 0, 
+          max: 1, 
+          grid: { color: 'rgba(148, 163, 184, 0.1)' }, 
+          ticks: { 
+            color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim(), 
+            stepSize: 0.2 
+          } 
+        }, 
+        x: { 
+          grid: { display: false }, 
+          ticks: { 
+            color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim(),
+            maxRotation: 45,
+            minRotation: 45
+          } 
+        } 
       },
-      plugins: { legend: { display: false } }
-    }
-  });
-}
-
-function renderActionsChart(history) {
-  const totals = { retry: 0, create_bug: 0, comment: 0, escalate: 0, none: 0 };
-  history.forEach(r => { if (r.decisions?.byAction) for (const k in totals) totals[k] += (r.decisions.byAction[k] || 0); });
-  const ctx = document.getElementById('actionsChart');
-  new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-      labels: ['Retry', 'Create bug', 'Comment', 'Escalate', 'None'],
-      datasets: [{ data: [totals.retry, totals.create_bug, totals.comment, totals.escalate, totals.none],
-        backgroundColor: ['#f59e0b', '#ef4444', '#3b82f6', '#a855f7', '#64748b'],
-        borderWidth: 2,
-        borderColor: getComputedStyle(document.documentElement).getPropertyValue('--surface').trim()
-      }]
-    },
-    options: { 
-      responsive: true, maintainAspectRatio: false, 
       plugins: { 
         legend: { 
-          position: 'bottom', 
-          labels: { 
-            color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim(),
-            boxWidth: 10, 
-            font: { size: 10 },
-            usePointStyle: true,
-            padding: 10
-          } 
-        } 
-      } 
+          display: false 
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return `Confidence: ${context.parsed.y.toFixed(2)}`;
+            }
+          }
+        }
+      }
     }
   });
-}
 
-function renderClassChart(history) {
-  const totals = { product_bug: 0, flaky: 0, test_issue: 0, environment: 0 };
-  history.forEach(r => { if (r.classifications) for (const k in totals) totals[k] += (r.classifications[k] || 0); });
-  const ctx = document.getElementById('classChart');
-  new Chart(ctx, {
-    type: 'doughnut',
+  // Classification chart
+  const classificationTotals = { product_bug: 0, flaky: 0, test_issue: 0, environment: 0 };
+  history.forEach(r => { 
+    if (r.classifications) for (const k in classificationTotals) {
+      classificationTotals[k] += (r.classifications[k] || 0); 
+    }
+  });
+  
+  const ctxClassification = document.getElementById('classificationChart');
+  new Chart(ctxClassification, {
+    type: 'bar',
     data: {
-      labels: ['Product bug', 'Flaky', 'Test issue', 'Environment'],
-      datasets: [{ data: [totals.product_bug, totals.flaky, totals.test_issue, totals.environment],
+      labels: ['Product Bug', 'Flaky', 'Test Issue', 'Environment'],
+      datasets: [{
+        data: [classificationTotals.product_bug, classificationTotals.flaky, classificationTotals.test_issue, classificationTotals.environment],
         backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6', '#a855f7'],
-        borderWidth: 2,
-        borderColor: getComputedStyle(document.documentElement).getPropertyValue('--surface').trim()
+        borderRadius: 6
       }]
     },
-    options: { 
-      responsive: true, maintainAspectRatio: false, 
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: { 
+        y: { 
+          beginAtZero: true, 
+          ticks: { precision: 0 }, 
+          grid: { color: 'rgba(148, 163, 184, 0.1)' } 
+        }, 
+        x: { 
+          grid: { display: false }, 
+          ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim() } 
+        } 
+      },
       plugins: { 
         legend: { 
-          position: 'bottom', 
-          labels: { 
-            color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim(),
-            boxWidth: 10, 
-            font: { size: 10 },
-            usePointStyle: true,
-            padding: 10
-          } 
-        } 
-      } 
+          display: false 
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const total = context.dataset.data.reduce((a, b) => a + b, 0);
+              const percentage = ((context.raw / total) * 100).toFixed(1);
+              return `${context.dataset.label}: ${context.raw} (${percentage}%)`;
+            }
+          }
+        }
+      }
     }
   });
-}
 
-function renderTable(history) {
-  const rows = [...history].reverse().slice(0, 15).map(r => {
+  // Actions chart
+  const ctxActions = document.getElementById('actionsChart');
+  new Chart(ctxActions, {
+    type: 'bar',
+    data: {
+      labels: ['Retry', 'Bug Created', 'Comment', 'Escalate', 'No Action'],
+      datasets: [{
+        data: [decisionTotals.retry, decisionTotals.create_bug, decisionTotals.comment, decisionTotals.escalate, decisionTotals.none],
+        backgroundColor: ['#f59e0b', '#ef4444', '#3b82f6', '#a855f7', '#64748b'],
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: { 
+        y: { 
+          beginAtZero: true, 
+          ticks: { precision: 0 }, 
+          grid: { color: 'rgba(148, 163, 184, 0.1)' } 
+        }, 
+        x: { 
+          grid: { display: false }, 
+          ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim() } 
+        } 
+      },
+      plugins: { 
+        legend: { 
+          display: false 
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const total = context.dataset.data.reduce((a, b) => a + b, 0);
+              const percentage = ((context.raw / total) * 100).toFixed(1);
+              return `${context.dataset.label}: ${context.raw} (${percentage}%)`;
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // Render recent runs table
+  const runsTable = document.getElementById('runsTable');
+  const rows = [...history].reverse().slice(0, 10).map(r => {
     const badges = [];
     if (r.bugsCreated) badges.push('<span class="badge badge-bug">' + r.bugsCreated + ' bug' + (r.bugsCreated > 1 ? 's' : '') + '</span>');
     if (r.classifications?.flaky) badges.push('<span class="badge badge-flaky">' + r.classifications.flaky + ' flaky</span>');
     if (!r.bugsCreated && !r.classifications?.flaky && (r.tests?.failed || 0) === 0) badges.push('<span class="badge badge-ok">clean</span>');
+    
     return '<tr>' +
       '<td><a href="' + (r.issueUrl || '#') + '" target="_blank" rel="noopener">' + r.ticket + '</a></td>' +
       '<td>' + fmtDate(r.startedAt) + '</td>' +
@@ -695,293 +833,80 @@ function renderTable(history) {
       '<td>' + (r.avgConfidence != null ? r.avgConfidence.toFixed(2) : '—') + '</td>' +
       '</tr>';
   });
-  document.getElementById('runsTable').innerHTML = rows.join('') || '<tr><td colspan="7">No runs yet.</td></tr>';
-}
+  runsTable.innerHTML = rows.join('') || '<tr><td colspan="7">No runs yet.</td></tr>';
 
-function renderRiskChart(history) {
-  const totals = {};
+  // Render risk table
+  const riskTable = document.getElementById('riskTable');
+  const riskData = {};
+  
   history.forEach(r => {
     if (r.risk) {
       for (const [tag, m] of Object.entries(r.risk)) {
-        const t = totals[tag] || (totals[tag] = { passed: 0, failed: 0, flaky: 0 });
-        t.passed += m.passed || 0; t.failed += m.failed || 0; t.flaky += m.flaky || 0;
+        const existing = riskData[tag];
+        if (!existing) {
+          riskData[tag] = { ...m };
+        } else {
+          // Aggregate values
+          existing.criteria += m.criteria;
+          existing.covered += m.covered;
+          existing.failed += m.failed;
+          existing.passed += m.passed;
+          existing.flaky += m.flaky;
+          existing.bugs += m.bugs;
+          if (m.avgConfidence != null && !isNaN(m.avgConfidence)) {
+            // Simple average for confidence
+            if (existing.confCount) {
+              existing.confSum += m.avgConfidence;
+              existing.confCount += 1;
+            } else {
+              existing.confSum = m.avgConfidence;
+              existing.confCount = 1;
+            }
+          }
+        }
       }
     }
   });
-  const labels = Object.keys(totals).sort();
-  const ctx = document.getElementById('riskChart');
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [
-        { label: 'Passed', data: labels.map(l => totals[l].passed), backgroundColor: '#10b981', borderRadius: 4 },
-        { label: 'Failed', data: labels.map(l => totals[l].failed), backgroundColor: '#ef4444', borderRadius: 4 },
-        { label: 'Flaky', data: labels.map(l => totals[l].flaky), backgroundColor: '#f59e0b', borderRadius: 4 },
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      scales: { 
-        x: { stacked: true, grid: { display: false }, ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim() } }, 
-        y: { stacked: true, beginAtZero: true, ticks: { precision: 0, color: getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim() }, grid: { color: 'rgba(148, 163, 184, 0.1)' } } 
-      },
-      plugins: { 
-        legend: { 
-          position: 'top',
-          labels: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim(), usePointStyle: true, padding: 16 } 
-        } 
-      }
-    }
-  });
-}
 
-function renderRiskTable(history) {
-  const agg = {};
-  history.forEach(r => {
-    if (r.risk) {
-      for (const [tag, m] of Object.entries(r.risk)) {
-        const a = agg[tag] || (agg[tag] = { criteria: 0, covered: 0, passed: 0, failed: 0, flaky: 0, bugs: 0, confSum: 0, confCount: 0 });
-        a.criteria += m.criteria || 0; a.covered += m.covered || 0;
-        a.passed += m.passed || 0; a.failed += m.failed || 0; a.flaky += m.flaky || 0; a.bugs += m.bugs || 0;
-        if (m.avgConfidence != null && !isNaN(m.avgConfidence)) { a.confSum += m.avgConfidence; a.confCount += 1; }
-      }
-    }
-  });
-  const rows = Object.keys(agg).sort().map(tag => {
-    const a = agg[tag];
-    const conf = a.confCount ? (a.confSum / a.confCount).toFixed(2) : '—';
+  const riskRows = Object.keys(riskData).sort().map(tag => {
+    const r = riskData[tag];
+    const conf = r.confCount ? (r.confSum / r.confCount).toFixed(2) : '—';
     return '<tr>' +
       '<td><strong>' + tag + '</strong></td>' +
-      '<td>' + a.covered + '/' + a.criteria + '</td>' +
-      '<td>' + a.passed + '/' + a.failed + '/' + a.flaky + '</td>' +
-      '<td>' + a.bugs + '</td>' +
+      '<td>' + r.covered + '/' + r.criteria + '</td>' +
+      '<td>' + r.passed + '/' + r.failed + '/' + r.flaky + '</td>' +
+      '<td>' + r.bugs + '</td>' +
       '<td>' + conf + '</td>' +
       '</tr>';
   });
-  document.getElementById('riskTable').innerHTML = rows.join('') || '<tr><td colspan="5">No tagged runs yet.</td></tr>';
+  
+  riskTable.innerHTML = riskRows.join('') || '<tr><td colspan="5">No tagged runs yet.</td></tr>';
 }
 
 (async function init() {
   const history = await loadHistory();
-  if (!history || !history.length) { renderEmpty(); }
-  else {
+  if (!history || !history.length) { 
+    renderEmpty(); 
+  } else {
     renderKpis(history);
-    renderTestsChart(history);
-    renderConfidenceChart(history);
-    renderActionsChart(history);
-    renderClassChart(history);
-    renderRiskChart(history);
-    renderRiskTable(history);
-    renderTable(history);
   }
-  await renderUreport();
 })();
 
-async function renderUreport() {
-  const data = await loadUreport();
-  const snap = await loadUreportSnapshot();
-  const link = document.getElementById('ureport-link');
-  const section = document.getElementById('ureport-section');
-
-  // Show snapshot lanes if available
-  if (snap && snap.lanes && snap.lanes.length) {
-    link.href = snap.baseUrl || (data && (data.appUrl || data.serverUrl)) || '#';
-    link.style.display = 'inline-flex';
-    section.style.display = 'block';
-    document.getElementById('ureport-meta').textContent =
-      (snap.product || (data && data.product) || '') + ' / ' + (snap.type || (data && data.type) || '') + ' · ' + snap.lanes.length + ' lanes • Snapshot ' + fmtDate(snap.fetchedAt);
+// Add chart tooltips functionality
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize tooltips for charts
+  const canvases = document.querySelectorAll('canvas');
+  
+  canvases.forEach(canvas => {
+    canvas.addEventListener('mousemove', function(e) {
+      // This functionality would be enhanced with custom tooltip implementation
+    });
     
-    // Remove all existing grids in uReport section
-    section.querySelectorAll('.grid-2').forEach(g => g.remove());
-    
-    // Add single grid with lanes
-    const newGrid = document.createElement('div');
-    newGrid.className = 'grid-2';
-    newGrid.innerHTML = 
-      '<div class="card"><h2>📍 Active Test Lanes</h2><div class="lane-grid">' +
-      snap.lanes.slice(0, 12).map(l => {
-        const badges = [];
-        if (l.team) badges.push('<span class="badge badge-team">' + l.team + '</span>');
-        if (l.browser) badges.push('<span class="badge badge-browser">' + l.browser + '</span>');
-        if (l.extras && l.extras.app) badges.push('<span class="badge badge-app">' + l.extras.app.replace('https://', '').replace('http://', '') + '</span>');
-        if (!l.team && !l.browser && (!l.extras || !l.extras.app)) badges.push('<span class="badge badge-default">' + l.product + '/' + l.type + '</span>');
-        return '<div class="lane-card"><div class="lane-title">' + l.product + ' / ' + l.type + '</div><div class="lane-meta">' + badges.join('') + '</div></div>';
-      }).join('') +
-      (snap.lanes.length > 12 ? '<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); font-size: 12px; padding: 8px;">… and ' + (snap.lanes.length - 12) + ' more lanes</div>' : '') +
-      '</div></div>' +
-      '<div class="card"><h2>💡 About This Snapshot</h2><div style="padding: 8px 0; line-height: 1.6; color: var(--text-secondary); font-size: 13px;">' +
-      '<p style="margin-top: 0;">This data is pulled directly from the uReport API and published to GitHub Pages for public visibility.</p>' +
-      '<p>Click <strong>"Open uReport"</strong> to access the full UI with interactive analytics, build history, and detailed test insights.</p>' +
-      '<div class="info-box">📊 ' + snap.lanes.length + ' active lanes across different configurations</div>' +
-      '</div></div>';
-    section.appendChild(newGrid);
-    return;
-  }
-
-  if (data) {
-    const target = data.appUrl || data.serverUrl;
-    if (target) {
-      link.href = target;
-      link.style.display = 'inline-flex';
-    }
-    const hasData = (data.passRateHistory || []).length || (data.topFailures || []).length ||
-                    (data.slowestTests || []).length || (data.buildDurationHistory || []).length;
-    if (hasData) {
-      section.style.display = 'block';
-      document.getElementById('ureport-meta').textContent =
-        data.product + ' / ' + data.type + ' · refreshed ' + fmtDate(data.generatedAt);
-      renderPassRateChart(data.passRateHistory || []);
-      renderBuildDurationChart(data.buildDurationHistory || []);
-      renderTopFailuresChart(data.topFailures || []);
-      renderSlowestChart(data.slowestTests || []);
-      return;
-    }
-  }
-    link.href = snap.baseUrl || '#';
-    link.style.display = 'inline-flex';
-    section.style.display = 'block';
-    document.getElementById('ureport-meta').textContent =
-      (snap.product || '') + ' / ' + (snap.type || '') + ' · ' + snap.lanes.length + ' lanes • Snapshot ' + fmtDate(snap.fetchedAt);
-    
-    // Remove all existing grids in uReport section
-    section.querySelectorAll('.grid-2').forEach(g => g.remove());
-    
-    // Add single grid with lanes
-    const newGrid = document.createElement('div');
-    newGrid.className = 'grid-2';
-    newGrid.innerHTML = 
-      '<div class="card"><h2>📍 Active Test Lanes</h2><div class="lane-grid">' +
-      snap.lanes.slice(0, 12).map(l => {
-        const badges = [];
-        if (l.team) badges.push('<span class="badge badge-team">' + l.team + '</span>');
-        if (l.browser) badges.push('<span class="badge badge-browser">' + l.browser + '</span>');
-        if (l.extras && l.extras.app) badges.push('<span class="badge badge-app">' + l.extras.app.replace('https://', '').replace('http://', '') + '</span>');
-        if (!l.team && !l.browser && (!l.extras || !l.extras.app)) badges.push('<span class="badge badge-default">' + l.product + '/' + l.type + '</span>');
-        return '<div class="lane-card"><div class="lane-title">' + l.product + ' / ' + l.type + '</div><div class="lane-meta">' + badges.join('') + '</div></div>';
-      }).join('') +
-      (snap.lanes.length > 12 ? '<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); font-size: 12px; padding: 8px;">… and ' + (snap.lanes.length - 12) + ' more lanes</div>' : '') +
-      '</div></div>' +
-      '<div class="card"><h2>💡 About This Snapshot</h2><div style="padding: 8px 0; line-height: 1.6; color: var(--text-secondary); font-size: 13px;">' +
-      '<p style="margin-top: 0;">This data is pulled directly from the uReport API and published to GitHub Pages for public visibility.</p>' +
-      '<p>Click <strong>"Open uReport"</strong> to access the full UI with interactive analytics, build history, and detailed test insights.</p>' +
-      '<div class="info-box">📊 ' + snap.lanes.length + ' active lanes across different configurations</div>' +
-      '</div></div>';
-    section.appendChild(newGrid);
-  }
-}
-
-function renderPassRateChart(points) {
-  const ctx = document.getElementById('passRateChart');
-  new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: points.map(p => fmtDate(p.startTime)),
-      datasets: [{
-        label: 'Pass rate %',
-        data: points.map(p => p.passRate),
-        borderColor: '#10b981',
-        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-        fill: true,
-        tension: 0.4,
-        pointRadius: 4,
-        pointBackgroundColor: '#10b981',
-        pointBorderColor: '#ffffff',
-        pointBorderWidth: 2,
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      scales: { 
-        y: { min: 0, max: 100, grid: { color: 'rgba(148, 163, 184, 0.1)' }, ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim() } }, 
-        x: { grid: { display: false }, ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim() } } 
-      },
-      plugins: { legend: { display: false } }
-    }
+    canvas.addEventListener('mouseout', function(e) {
+      // Hide custom tooltips if any
+    });
   });
-}
-
-function renderBuildDurationChart(points) {
-  const ctx = document.getElementById('buildDurationChart');
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: points.map(p => fmtDate(p.startTime)),
-      datasets: [{
-        label: 'Duration (s)',
-        data: points.map(p => Math.round(p.durationMs / 1000)),
-        backgroundColor: '#3b82f6',
-        borderRadius: 4,
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      scales: { 
-        y: { beginAtZero: true, grid: { color: 'rgba(148, 163, 184, 0.1)' }, ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim() } }, 
-        x: { grid: { display: false }, ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim() } } 
-      },
-      plugins: { legend: { display: false } }
-    }
-  });
-}
-
-function renderTopFailuresChart(items) {
-  const ctx = document.getElementById('topFailuresChart');
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: items.map(i => i.name.length > 40 ? i.name.substring(0, 37) + '...' : i.name),
-      datasets: [{ label: 'Failures', data: items.map(i => i.failCount), backgroundColor: '#ef4444', borderRadius: 4 }]
-    },
-    options: {
-      indexAxis: 'y',
-      responsive: true, maintainAspectRatio: false,
-      scales: { 
-        x: { beginAtZero: true, ticks: { precision: 0, color: getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim() }, grid: { color: 'rgba(148, 163, 184, 0.1)' } }, 
-        y: { grid: { display: false }, ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim() } } 
-      },
-      plugins: { 
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            title: function(context) {
-              return items[context[0].dataIndex].name;
-            }
-          }
-        }
-      }
-    }
-  });
-}
-
-function renderSlowestChart(items) {
-  const ctx = document.getElementById('slowestChart');
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: items.map(i => i.name.length > 40 ? i.name.substring(0, 37) + '...' : i.name),
-      datasets: [{ label: 'Avg duration (ms)', data: items.map(i => Math.round(i.avgDurationMs)), backgroundColor: '#f59e0b', borderRadius: 4 }]
-    },
-    options: {
-      indexAxis: 'y',
-      responsive: true, maintainAspectRatio: false,
-      scales: { 
-        x: { beginAtZero: true, ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim() }, grid: { color: 'rgba(148, 163, 184, 0.1)' } }, 
-        y: { grid: { display: false }, ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim() } } 
-      },
-      plugins: { 
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            title: function(context) {
-              return items[context[0].dataIndex].name;
-            }
-          }
-        }
-      }
-    }
-  });
-}
+});
 </script>
 </body>
 </html>
