@@ -1,0 +1,185 @@
+[
+  {
+    "runId": "run-001",
+    "ticket": "QA-101",
+    "issueUrl": "https://example.atlassian.net/browse/QA-101",
+    "startedAt": "2023-10-01T08:00:00Z",
+    "finishedAt": "2023-10-01T09:30:00Z",
+    "durationMs": 5400000,
+    "tests": {
+      "passed": 45,
+      "failed": 3,
+      "flaky": 2,
+      "skipped": 1,
+      "total": 51
+    },
+    "coverage": {
+      "total": 60,
+      "covered": 55,
+      "missing": 5
+    },
+    "generatedSpecs": 2,
+    "decisions": {
+      "total": 8,
+      "byAction": {
+        "none": 4,
+        "retry": 1,
+        "create_bug": 2,
+        "comment": 1,
+        "escalate": 0
+      }
+    },
+    "classifications": {
+      "product_bug": 2,
+      "flaky": 1,
+      "test_issue": 0,
+      "environment": 0
+    },
+    "avgConfidence": 0.85,
+    "bugsCreated": 2,
+    "risk": {
+      "@auth": {
+        "criteria": 15,
+        "covered": 14,
+        "missing": 1,
+        "passed": 13,
+        "failed": 1,
+        "flaky": 0,
+        "bugs": 1,
+        "avgConfidence": 0.82
+      },
+      "@critical": {
+        "criteria": 20,
+        "covered": 18,
+        "missing": 2,
+        "passed": 16,
+        "failed": 2,
+        "flaky": 1,
+        "bugs": 1,
+        "avgConfidence": 0.87
+      }
+    }
+  },
+  {
+    "runId": "run-002",
+    "ticket": "QA-102",
+    "issueUrl": "https://example.atlassian.net/browse/QA-102",
+    "startedAt": "2023-10-02T08:00:00Z",
+    "finishedAt": "2023-10-02T09:45:00Z",
+    "durationMs": 6300000,
+    "tests": {
+      "passed": 38,
+      "failed": 7,
+      "flaky": 3,
+      "skipped": 2,
+      "total": 50
+    },
+    "coverage": {
+      "total": 60,
+      "covered": 52,
+      "missing": 8
+    },
+    "generatedSpecs": 1,
+    "decisions": {
+      "total": 10,
+      "byAction": {
+        "none": 3,
+        "retry": 2,
+        "create_bug": 4,
+        "comment": 1,
+        "escalate": 0
+      }
+    },
+    "classifications": {
+      "product_bug": 4,
+      "flaky": 2,
+      "test_issue": 0,
+      "environment": 0
+    },
+    "avgConfidence": 0.89,
+    "bugsCreated": 4,
+    "risk": {
+      "@auth": {
+        "criteria": 15,
+        "covered": 13,
+        "missing": 2,
+        "passed": 12,
+        "failed": 2,
+        "flaky": 1,
+        "bugs": 2,
+        "avgConfidence": 0.85
+      },
+      "@critical": {
+        "criteria": 20,
+        "covered": 17,
+        "missing": 3,
+        "passed": 14,
+        "failed": 3,
+        "flaky": 2,
+        "bugs": 2,
+        "avgConfidence": 0.90
+      }
+    }
+  },
+  {
+    "runId": "run-003",
+    "ticket": "QA-103",
+    "issueUrl": "https://example.atlassian.net/browse/QA-103",
+    "startedAt": "2023-10-03T08:00:00Z",
+    "finishedAt": "2023-10-03T10:15:00Z",
+    "durationMs": 8100000,
+    "tests": {
+      "passed": 42,
+      "failed": 5,
+      "flaky": 1,
+      "skipped": 2,
+      "total": 50
+    },
+    "coverage": {
+      "total": 60,
+      "covered": 58,
+      "missing": 2
+    },
+    "generatedSpecs": 3,
+    "decisions": {
+      "total": 9,
+      "byAction": {
+        "none": 2,
+        "retry": 1,
+        "create_bug": 3,
+        "comment": 2,
+        "escalate": 1
+      }
+    },
+    "classifications": {
+      "product_bug": 3,
+      "flaky": 1,
+      "test_issue": 0,
+      "environment": 0
+    },
+    "avgConfidence": 0.87,
+    "bugsCreated": 3,
+    "risk": {
+      "@auth": {
+        "criteria": 15,
+        "covered": 15,
+        "missing": 0,
+        "passed": 14,
+        "failed": 1,
+        "flaky": 0,
+        "bugs": 1,
+        "avgConfidence": 0.88
+      },
+      "@critical": {
+        "criteria": 20,
+        "covered": 19,
+        "missing": 1,
+        "passed": 17,
+        "failed": 2,
+        "flaky": 1,
+        "bugs": 2,
+        "avgConfidence": 0.86
+      }
+    }
+  }
+]

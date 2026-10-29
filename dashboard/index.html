@@ -1,320 +1,48 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Agentic QA Workflow Dashboard - Real-time test performance and decision metrics">
 <title>Agentic QA Dashboard</title>
 <style>
-:root {
-  --primary-color: #3b82f6;
-  --success-color: #10b981;
-  --danger-color: #ef4444;
-  --warning-color: #f59e0b;
-  --info-color: #6366f1;
-  --background: #0f172a;
-  --card-bg: #1e293b;
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --border-radius: 8px;
-  --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --transition: all 0.3s ease;
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: var(--background);
-  color: var(--text-primary);
-  line-height: 1.6;
-}
-
-.container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #334155;
-}
-
-.title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  background: linear-gradient(90deg, var(--primary-color), var(--success-color));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.subtitle {
-  font-size: 1rem;
-  color: var(--text-secondary);
-  margin-top: 5px;
-}
-
-.card {
-  background: var(--card-bg);
-  border-radius: var(--border-radius);
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: var(--box-shadow);
-  transition: var(--transition);
-}
-
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-}
-
-.card-title {
-  font-size: 1.3rem;
-  margin-bottom: 15px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.card-title i {
-  color: var(--primary-color);
-}
-
-.kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 15px;
-  margin-bottom: 20px;
-}
-
-.kpi-card {
-  background: rgba(30, 41, 59, 0.7);
-  border-radius: var(--border-radius);
-  padding: 15px;
-  text-align: center;
-  transition: var(--transition);
-}
-
-.kpi-card:hover {
-  transform: scale(1.02);
-  background: rgba(30, 41, 59, 0.9);
-}
-
-.kpi-value {
-  font-size: 2rem;
-  font-weight: 700;
-  margin: 10px 0;
-}
-
-.kpi-label {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-}
-
-.kpi-trend {
-  font-size: 1.2rem;
-  margin-left: 5px;
-}
-
-.trend-up {
-  color: var(--success-color);
-}
-
-.trend-down {
-  color: var(--danger-color);
-}
-
-.chart-container {
-  height: 250px;
-  margin-bottom: 20px;
-  position: relative;
-  max-width: 100%;
-  overflow: hidden;
-  min-width: 0; /* Prevents container from expanding beyond available space */
-}
-
-/* Ensure charts respect container dimensions */
-canvas {
-  max-width: 100% !important;
-  height: auto !important;
-  width: 100% !important;
-  max-height: 100% !important;
-}
-
-.table-container {
-  overflow-x: auto;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 15px 0;
-}
-
-th, td {
-  padding: 12px 15px;
-  text-align: left;
-  border-bottom: 1px solid #334155;
-}
-
-th {
-  background-color: rgba(56, 73, 90, 0.5);
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
-tr:hover {
-  background-color: rgba(56, 73, 90, 0.2);
-}
-
-.badge {
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  display: inline-block;
-  margin: 2px;
-}
-
-.badge-bug {
-  background-color: rgba(239, 68, 68, 0.2);
-  color: #ef4444;
-}
-
-.badge-flaky {
-  background-color: rgba(245, 158, 11, 0.2);
-  color: #f59e0b;
-}
-
-.badge-ok {
-  background-color: rgba(16, 185, 129, 0.2);
-  color: #10b981;
-}
-
-.badge-retry {
-  background-color: rgba(245, 158, 11, 0.2);
-  color: #f59e0b;
-}
-
-.badge-comment {
-  background-color: rgba(59, 130, 246, 0.2);
-  color: #3b82f6;
-}
-
-.badge-escalate {
-  background-color: rgba(168, 85, 247, 0.2);
-  color: #a855f7;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 40px;
-  color: var(--text-secondary);
-}
-
-.empty-state i {
-  font-size: 3rem;
-  margin-bottom: 15px;
-  display: block;
-  color: #64748b;
-}
-
-.empty-state p {
-  font-size: 1.1rem;
-}
-
-.btn {
-  background-color: var(--primary-color);
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: var(--border-radius);
-  cursor: pointer;
-  font-weight: 600;
-  transition: var(--transition);
-  text-decoration: none;
-  display: inline-block;
-}
-
-.btn:hover {
-  background-color: #2563eb;
-  transform: translateY(-2px);
-}
-
-.btn-outline {
-  background: transparent;
-  border: 1px solid var(--primary-color);
-}
-
-.btn-outline:hover {
-  background-color: rgba(59, 130, 246, 0.1);
-}
-
-.grid-2 {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
-  gap: 20px;
-  margin-bottom: 20px;
-}
-
-@media (max-width: 768px) {
-  .grid-2 {
-    grid-template-columns: 1fr;
-  }
-  
-  .kpi-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
-  }
-}
-
-/* Theme toggle */
-.theme-toggle {
-  background: none;
-  border: none;
-  color: var(--text-primary);
-  cursor: pointer;
-  padding: 8px;
-  border-radius: var(--border-radius);
-  transition: var(--transition);
-}
-
-.theme-toggle:hover {
-  background-color: rgba(56, 73, 90, 0.2);
-}
-
-/* Chart tooltips */
-.chart-tooltip {
-  position: absolute;
-  background: rgba(15, 23, 42, 0.9);
-  border: 1px solid #334155;
-  border-radius: var(--border-radius);
-  padding: 10px;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  backdrop-filter: blur(4px);
-  z-index: 1000;
-  max-width: 300px;
-}
-
-.chart-tooltip.show {
-  opacity: 1;
-}
+:root{--primary-color:#3b82f6;--success-color:#10b981;--danger-color:#ef4444;--warning-color:#f59e0b;
+--background:#0f172a;--card-bg:#1e293b;--text-primary:#f8fafc;--text-secondary:#94a3b8;--border:#334155;
+--kpi-bg:rgba(30,41,59,.7);--th-bg:rgba(56,73,90,.5);--hover-bg:rgba(56,73,90,.2);
+--border-radius:8px;--box-shadow:0 4px 6px rgba(0,0,0,.1);--transition:all .3s ease}
+[data-theme="light"]{--background:#f1f5f9;--card-bg:#fff;--text-primary:#0f172a;--text-secondary:#475569;--border:#e2e8f0;
+--kpi-bg:#f8fafc;--th-bg:#f1f5f9;--hover-bg:#f1f5f9;--box-shadow:0 1px 3px rgba(0,0,0,.12)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:var(--background);color:var(--text-primary);line-height:1.6;font-size:14px}
+.container{max-width:1200px;margin:0 auto;padding:20px}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.title{font-size:2rem;font-weight:700;background:linear-gradient(90deg,var(--primary-color),var(--success-color));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.subtitle{color:var(--text-secondary);margin-top:5px}
+.card{background:var(--card-bg);border-radius:var(--border-radius);padding:20px;margin-bottom:20px;box-shadow:var(--box-shadow)}
+.card-title{font-size:1.3rem;margin-bottom:15px}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;margin-bottom:20px}
+.kpi-card{background:var(--kpi-bg);border-radius:var(--border-radius);padding:15px;text-align:center;box-shadow:var(--box-shadow)}
+.kpi-value{font-size:1.8rem;font-weight:700;margin:10px 0}
+.kpi-label,.kpi-sub{font-size:.9rem;color:var(--text-secondary)}
+.kpi-trend{font-size:1.2rem}.trend-up{color:var(--success-color)}
+/* Fixed-height wrapper: Chart.js sizes the canvas to THIS box. Never put a canvas directly in a
+   card with maintainAspectRatio:false, and never force canvas height with CSS (resize loop). */
+.chart-container{position:relative;height:300px;width:100%;min-width:0}
+.table-container{overflow-x:auto}
+table{width:100%;border-collapse:collapse;margin:15px 0}
+th,td{padding:12px 15px;text-align:left;border-bottom:1px solid var(--border)}
+th{background:var(--th-bg);font-weight:600;color:var(--text-secondary)}
+tr:hover{background:var(--hover-bg)}
+a{color:var(--primary-color)}
+.badge{padding:4px 8px;border-radius:12px;font-size:.7rem;font-weight:500;display:inline-block;margin:2px}
+.badge-bug{background:rgba(239,68,68,.2);color:#ef4444}.badge-flaky{background:rgba(245,158,11,.2);color:#d97706}
+.badge-ok{background:rgba(16,185,129,.2);color:#059669}
+.empty-state{text-align:center;padding:40px;color:var(--text-secondary)}
+.demo-banner{background:rgba(245,158,11,.15);border:1px solid var(--warning-color);color:var(--warning-color);
+border-radius:var(--border-radius);padding:12px 16px;margin-bottom:20px;font-weight:600}
+.grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:20px;margin-bottom:20px}
+@media (max-width:768px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.header{flex-direction:column;align-items:flex-start;gap:15px}body{font-size:12px}}
+.theme-toggle{background:none;border:none;color:var(--text-primary);cursor:pointer;padding:8px;border-radius:var(--border-radius)}
+.theme-toggle:hover{background:var(--hover-bg)}
 </style>
 </head>
 <body>
@@ -324,70 +52,42 @@ tr:hover {
       <h1 class="title">Agentic QA Dashboard</h1>
       <p class="subtitle">Real-time test performance and automated decision metrics</p>
     </div>
-    <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()">
-      🌙 Dark
-    </button>
+    <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()">🌙 Dark</button>
   </div>
-
-  <div id="content">
-    <div class="empty-state">
-      <i>📊</i>
-      <h2>Loading dashboard data...</h2>
-      <p>Run <code>npm run report</code> to populate dashboard metrics</p>
-    </div>
-  </div>
+  <div id="content"><div class="empty-state"><h2>Loading dashboard data...</h2></div></div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script>
-function toggleTheme() {
-  const html = document.documentElement;
-  const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-  html.setAttribute('data-theme', next);
-  
-  const btn = document.getElementById('theme-toggle');
-  btn.textContent = next === 'dark' ? '🌙 Dark' : '☀️ Light';
-}
+let charts = [];
+let current = null; // { history, demo } so the theme toggle can re-render
 
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const safeUrl = u => /^https?:\/\//.test(u || '') ? u : '#';
+const cssVar = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const pct = (n, d) => d ? Math.round((n / d) * 100) : 0;
 function fmtDate(iso) {
-  if (!iso) return '—';
   const d = new Date(iso);
-  if (isNaN(d)) return '—';
-  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: '2-digit' });
+  return (!iso || isNaN(d)) ? '—' : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
-function pct(n, d) { 
-  return d ? Math.round((n / d) * 100) : 0; 
+function toggleTheme() {
+  const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  document.getElementById('theme-toggle').textContent = next === 'dark' ? '🌙 Dark' : '☀️ Light';
+  if (current) render(current.history, current.demo); // chart colors are read at render time
 }
 
+// Pages serves metrics-history.json next to index.html; the other paths cover local/dev layouts.
 async function loadHistory() {
   const candidates = ['./metrics-history.json', '../reporting/metrics-history.json', './reporting/metrics-history.json'];
   for (const url of candidates) {
     try {
       const res = await fetch(url, { cache: 'no-store' });
-      if (res.ok) return await res.json();
-    } catch (e) { /* try next */ }
-  }
-  return null;
-}
-
-async function loadUreport() {
-  const candidates = ['./ureport-history.json', '../reporting/ureport-history.json', './reporting/ureport-history.json'];
-  for (const url of candidates) {
-    try {
-      const res = await fetch(url, { cache: 'no-store' });
-      if (res.ok) return await res.json();
-    } catch (e) { /* try next */ }
-  }
-  return null;
-}
-
-async function loadUreportSnapshot() {
-  const candidates = ['./ureport-snapshot.json', '../reporting/ureport-snapshot.json', './reporting/ureport-snapshot.json'];
-  for (const url of candidates) {
-    try {
-      const res = await fetch(url, { cache: 'no-store' });
-      if (res.ok) return await res.json();
+      if (!res.ok) continue;
+      const data = await res.json();
+      const history = Array.isArray(data) ? data : data.history;
+      if (Array.isArray(history)) return history;
     } catch (e) { /* try next */ }
   }
   return null;
@@ -395,573 +95,141 @@ async function loadUreportSnapshot() {
 
 function renderEmpty() {
   document.getElementById('content').innerHTML =
-    '<div class="empty-state">' +
-    '<i>📊</i>' +
-    '<h2>No runs yet</h2>' +
-    '<p>Run <code>npm run report</code> after a pipeline run to populate reporting/metrics-history.json.</p>' +
-    '<a href="#" onclick="location.reload()" class="btn">Refresh</a>' +
-    '</div>';
+    '<div class="empty-state"><h2>No runs yet</h2><p>Run <code>npm run report</code> after a pipeline run to populate reporting/metrics-history.json.</p></div>';
 }
 
-function renderKpis(history) {
-  const totals = history.reduce((acc, r) => {
-    acc.total += r.tests.total || 0;
-    acc.passed += r.tests.passed || 0;
-    acc.failed += r.tests.failed || 0;
-    acc.flaky += r.tests.flaky || 0;
-    acc.bugs += r.bugsCreated || 0;
-    acc.decisions += r.decisions?.total || 0;
-    return acc;
-  }, { total: 0, passed: 0, failed: 0, flaky: 0, bugs: 0, decisions: 0 });
+function applyChartDefaults() {
+  Chart.defaults.responsive = true;
+  Chart.defaults.maintainAspectRatio = false;
+  Chart.defaults.animation = false;
+  Chart.defaults.color = cssVar('--text-secondary');
+  Chart.defaults.borderColor = 'rgba(148,163,184,.15)';
+  Chart.defaults.font.size = 11;
+}
+function mk(id, type, data, options) {
+  charts.push(new Chart(document.getElementById(id), { type, data, options }));
+}
+const pctLabel = c => {
+  const t = c.dataset.data.reduce((a, b) => a + b, 0);
+  return `${c.label}: ${c.raw}` + (t ? ` (${(c.raw / t * 100).toFixed(1)}%)` : '');
+};
+const donut = (id, labels, data, colors) => mk(id, 'doughnut',
+  { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: cssVar('--card-bg') }] },
+  { cutout: '65%', plugins: { legend: { position: 'bottom', labels: { padding: 12, usePointStyle: true } }, tooltip: { callbacks: { label: pctLabel } } } });
+const bars = (id, labels, data, colors) => mk(id, 'bar',
+  { labels, datasets: [{ data, backgroundColor: colors, borderRadius: 6 }] },
+  { scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { grid: { display: false } } },
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: pctLabel } } } });
+const xTicks = { grid: { display: false }, ticks: { maxRotation: 45, minRotation: 45 } };
 
-  const confidences = history.map(r => r.avgConfidence).filter(c => c != null && !isNaN(c));
-  const avgConf = confidences.length ? (confidences.reduce((a, b) => a + b, 0) / confidences.length) : null;
+function render(history, demo) {
+  current = { history, demo };
+  charts.forEach(c => c.destroy()); charts = [];
+  applyChartDefaults();
+
+  const t = history.reduce((a, r) => {
+    a.total += r.tests?.total || 0; a.passed += r.tests?.passed || 0; a.failed += r.tests?.failed || 0;
+    a.flaky += r.tests?.flaky || 0; a.bugs += r.bugsCreated || 0; a.decisions += r.decisions?.total || 0;
+    return a;
+  }, { total: 0, passed: 0, failed: 0, flaky: 0, bugs: 0, decisions: 0 });
+  const confs = history.map(r => r.avgConfidence).filter(c => c != null && !isNaN(c));
+  const avgConf = confs.length ? confs.reduce((a, b) => a + b, 0) / confs.length : null;
 
   const kpis = [
-    { label: 'Total Runs', value: history.length, trend: null },
-    { label: 'Pass Rate', value: pct(totals.passed, totals.total) + '%', sub: totals.passed + '/' + totals.total + ' tests', trend: '↗' },
-    { label: 'Flaky Rate', value: pct(totals.flaky, totals.total) + '%', sub: totals.flaky + ' flaky tests', trend: '→' },
-    { label: 'Bugs Auto-Created', value: totals.bugs, sub: totals.decisions + ' decisions made', trend: '↗' },
-    { label: 'Avg Analyst Confidence', value: avgConf != null ? avgConf.toFixed(2) : '—', trend: null },
+    { label: 'Total Runs', value: history.length },
+    { label: 'Pass Rate', value: pct(t.passed, t.total) + '%', sub: `${t.passed}/${t.total} tests`, trend: '↗' },
+    { label: 'Flaky Rate', value: pct(t.flaky, t.total) + '%', sub: `${t.flaky} flaky tests`, trend: '→' },
+    { label: 'Bugs Auto-Created', value: t.bugs, sub: `${t.decisions} decisions made`, trend: '↗' },
+    { label: 'Avg Analyst Confidence', value: avgConf != null ? avgConf.toFixed(2) : '—' }
   ];
+  const chartCard = (title, id) =>
+    `<div class="card"><h2 class="card-title">${title}</h2><div class="chart-container"><canvas id="${id}"></canvas></div></div>`;
+  const table = (title, heads, id) =>
+    `<div class="card"><h2 class="card-title">${title}</h2><div class="table-container"><table><thead><tr>${heads.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody id="${id}"></tbody></table></div></div>`;
 
-  document.getElementById('content').innerHTML = `
-    <div class="kpi-grid">
-      ${kpis.map(k =>
-        '<div class="kpi-card">' +
-        (k.trend ? '<div class="kpi-trend"><span class="trend-up">' + k.trend + '</span></div>' : '') +
-        '<div class="kpi-label">' + k.label + '</div>' +
-        '<div class="kpi-value">' + k.value + '</div>' +
-        (k.sub ? '<div class="kpi-sub">' + k.sub + '</div>' : '') +
-        '</div>'
-      ).join('')}
-    </div>
-    
-    <div class="grid-2">
-      <div class="card">
-        <h2 class="card-title">Test Outcomes</h2>
-        <canvas id="overviewChart"></canvas>
-      </div>
-      
-      <div class="card">
-        <h2 class="card-title">Decision Actions Overview</h2>
-        <canvas id="decisionOverviewChart"></canvas>
-      </div>
-    </div>
-    
-    <div class="grid-2">
-      <div class="card">
-        <h2 class="card-title">Test Results Over Time</h2>
-        <canvas id="testsTrendChart"></canvas>
-      </div>
-      
-      <div class="card">
-        <h2 class="card-title">Analyst Confidence Trend</h2>
-        <canvas id="confidenceChart"></canvas>
-      </div>
-    </div>
-    
-    <div class="grid-2">
-      <div class="card">
-        <h2 class="card-title">Failure Classification</h2>
-        <canvas id="classificationChart"></canvas>
-      </div>
-      
-      <div class="card">
-        <h2 class="card-title">Decision Actions by Type</h2>
-        <canvas id="actionsChart"></canvas>
-      </div>
-    </div>
-    
-    <div class="card">
-      <h2 class="card-title">Recent Pipeline Runs</h2>
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Ticket</th>
-              <th>Date</th>
-              <th>Tests</th>
-              <th>Coverage</th>
-              <th>Decisions</th>
-              <th>Bugs</th>
-              <th>Avg Conf</th>
-            </tr>
-          </thead>
-          <tbody id="runsTable"></tbody>
-        </table>
-      </div>
-    </div>
-    
-    <div class="card">
-      <h2 class="card-title">Business Risk Metrics</h2>
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Risk Tag</th>
-              <th>Coverage</th>
-              <th>Tests</th>
-              <th>Bugs</th>
-              <th>Avg Conf</th>
-            </tr>
-          </thead>
-          <tbody id="riskTable"></tbody>
-        </table>
-      </div>
-    </div>
-  `;
+  document.getElementById('content').innerHTML =
+    (demo ? '<div class="demo-banner">⚠️ EXAMPLE DATA — metrics-history.json could not be loaded. These numbers are not real.</div>' : '') +
+    '<div class="kpi-grid">' + kpis.map(k =>
+      '<div class="kpi-card">' + (k.trend ? `<div class="kpi-trend"><span class="trend-up">${k.trend}</span></div>` : '') +
+      `<div class="kpi-label">${k.label}</div><div class="kpi-value">${k.value}</div>` +
+      (k.sub ? `<div class="kpi-sub">${k.sub}</div>` : '') + '</div>').join('') + '</div>' +
+    `<div class="grid-2">${chartCard('Test Outcomes', 'overviewChart')}${chartCard('Decision Actions Overview', 'decisionOverviewChart')}</div>` +
+    `<div class="grid-2">${chartCard('Test Results Over Time', 'testsTrendChart')}${chartCard('Analyst Confidence Trend', 'confidenceChart')}</div>` +
+    `<div class="grid-2">${chartCard('Failure Classification', 'classificationChart')}${chartCard('Decision Actions by Type', 'actionsChart')}</div>` +
+    table('Recent Pipeline Runs', ['Ticket', 'Date', 'Tests', 'Coverage', 'Decisions', 'Bugs', 'Avg Conf'], 'runsTable') +
+    table('Business Risk Metrics', ['Risk Tag', 'Coverage', 'Tests', 'Bugs', 'Avg Conf'], 'riskTable');
 
-  // Render overview donuts
-  const ctxOverview = document.getElementById('overviewChart');
-  new Chart(ctxOverview, {
-    type: 'doughnut',
-    data: {
-      labels: ['Passed', 'Failed', 'Flaky'],
-      datasets: [{
-        data: [totals.passed, totals.failed, totals.flaky],
-        backgroundColor: ['#10b981', '#ef4444', '#f59e0b'],
-        borderWidth: 2,
-        borderColor: getComputedStyle(document.documentElement).getPropertyValue('--card-bg').trim()
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      cutout: '65%',
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: {
-            color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim(),
-            padding: 12,
-            usePointStyle: true,
-            font: { size: 11 }
-          }
-        },
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              const total = context.dataset.data.reduce((a, b) => a + b, 0);
-              const percentage = ((context.raw / total) * 100).toFixed(1);
-              return `${context.label}: ${context.raw} (${percentage}%)`;
-            }
-          }
-        }
-      },
-      // Set explicit chart dimensions with tight constraints
-      layout: {
-        padding: 10
-      },
-      aspectRatio: 1.0, // Square ratio for doughnut charts to prevent oversized rendering
-      // Limit the rendering area to prevent memory issues
-      animation: {
-        duration: 0
-      }
-    }
-  });
+  donut('overviewChart', ['Passed', 'Failed', 'Flaky'], [t.passed, t.failed, t.flaky], ['#10b981', '#ef4444', '#f59e0b']);
 
-  // Decision overview
-  const decisionTotals = { retry: 0, create_bug: 0, comment: 0, escalate: 0, none: 0 };
-  history.forEach(r => {
-    if (r.decisions?.byAction) {
-      decisionTotals.retry += r.decisions.byAction.retry || 0;
-      decisionTotals.create_bug += r.decisions.byAction.create_bug || 0;
-      decisionTotals.comment += r.decisions.byAction.comment || 0;
-      decisionTotals.escalate += r.decisions.byAction.escalate || 0;
-      decisionTotals.none += r.decisions.byAction.none || 0;
-    }
-  });
-  const ctxDecision = document.getElementById('decisionOverviewChart');
-  new Chart(ctxDecision, {
-    type: 'doughnut',
-    data: {
-      labels: ['Retry', 'Bug Created', 'Comment', 'Escalate', 'None'],
-      datasets: [{
-        data: [decisionTotals.retry, decisionTotals.create_bug, decisionTotals.comment, decisionTotals.escalate, decisionTotals.none],
-        backgroundColor: ['#f59e0b', '#ef4444', '#3b82f6', '#a855f7', '#64748b'],
-        borderWidth: 2,
-        borderColor: getComputedStyle(document.documentElement).getPropertyValue('--card-bg').trim()
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      cutout: '65%',
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: {
-            color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim(),
-            padding: 12,
-            usePointStyle: true,
-            font: { size: 11 }
-          }
-        },
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              const total = context.dataset.data.reduce((a, b) => a + b, 0);
-              const percentage = ((context.raw / total) * 100).toFixed(1);
-              return `${context.label}: ${context.raw} (${percentage}%)`;
-            }
-          }
-        }
-      },
-      // Set explicit chart dimensions with tight constraints
-      layout: {
-        padding: 10
-      },
-      aspectRatio: 1.0, // Square ratio for doughnut charts to prevent oversized rendering
-      // Limit the rendering area to prevent memory issues
-      animation: {
-        duration: 0
-      }
-    }
-  });
+  const d = { retry: 0, create_bug: 0, comment: 0, escalate: 0, none: 0 };
+  history.forEach(r => { for (const k in d) d[k] += r.decisions?.byAction?.[k] || 0; });
+  const dData = [d.retry, d.create_bug, d.comment, d.escalate, d.none];
+  const dColors = ['#f59e0b', '#ef4444', '#3b82f6', '#a855f7', '#64748b'];
+  donut('decisionOverviewChart', ['Retry', 'Bug Created', 'Comment', 'Escalate', 'None'], dData, dColors);
 
-  // Test results over time
-  const ctxTestsTrend = document.getElementById('testsTrendChart');
-  new Chart(ctxTestsTrend, {
-    type: 'line',
-    data: {
-      labels: history.map(r => fmtDate(r.startedAt)),
-      datasets: [
-        { 
-          label: 'Passed', 
-          data: history.map(r => r.tests.passed || 0), 
-          borderColor: '#10b981', 
-          backgroundColor: 'rgba(16, 185, 129, 0.1)',
-          fill: true,
-          tension: 0.4,
-          pointRadius: 3
-        },
-        { 
-          label: 'Failed', 
-          data: history.map(r => r.tests.failed || 0), 
-          borderColor: '#ef4444', 
-          backgroundColor: 'rgba(239, 68, 68, 0.1)',
-          fill: true,
-          tension: 0.4,
-          pointRadius: 3
-        },
-        { 
-          label: 'Flaky', 
-          data: history.map(r => r.tests.flaky || 0), 
-          borderColor: '#f59e0b', 
-          backgroundColor: 'rgba(245, 158, 11, 0.1)',
-          fill: true,
-          tension: 0.4,
-          pointRadius: 3
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: { 
-        x: { 
-          grid: { display: false }, 
-          ticks: { 
-            color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim(),
-            maxRotation: 45,
-            minRotation: 45
-          } 
-        }, 
-        y: { 
-          beginAtZero: true, 
-          ticks: { 
-            precision: 0, 
-            color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim() 
-          },
-          grid: { color: 'rgba(148, 163, 184, 0.1)' } 
-        } 
-      },
-      plugins: { 
-        legend: { 
-          position: 'top',
-          labels: { 
-            color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim(), 
-            usePointStyle: true, 
-            padding: 16 
-          } 
-        },
-        tooltip: {
-          mode: 'index',
-          intersect: false
-        }
-      },
-      // Set chart dimensions with explicit limits
-      responsive: true,
-      maintainAspectRatio: true,
-      aspectRatio: 2.5,
-      // Limit maximum canvas size for performance
-      animation: {
-        duration: 0 // Disable animations for better performance
-      }
-    }
-  });
+  const line = (label, key, color) => ({ label, data: history.map(r => r.tests?.[key] || 0), borderColor: color,
+    backgroundColor: color + '1a', fill: true, tension: 0.4, pointRadius: 3 });
+  mk('testsTrendChart', 'line',
+    { labels: history.map(r => fmtDate(r.startedAt)), datasets: [line('Passed', 'passed', '#10b981'), line('Failed', 'failed', '#ef4444'), line('Flaky', 'flaky', '#f59e0b')] },
+    { scales: { x: xTicks, y: { beginAtZero: true, ticks: { precision: 0 } } },
+      plugins: { legend: { position: 'top', labels: { usePointStyle: true, padding: 12 } }, tooltip: { mode: 'index', intersect: false } } });
 
-  // Confidence trend chart
   const withConf = history.filter(r => r.avgConfidence != null && !isNaN(r.avgConfidence));
-  const ctxConfidence = document.getElementById('confidenceChart');
-  new Chart(ctxConfidence, {
-    type: 'line',
-    data: {
-      labels: withConf.map(r => fmtDate(r.startedAt)),
-      datasets: [{
-        label: 'Avg confidence',
-        data: withConf.map(r => r.avgConfidence),
-        borderColor: '#3b82f6',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        fill: true,
-        tension: 0.4,
-        pointRadius: 4,
-        pointBackgroundColor: '#3b82f6',
-        pointBorderColor: '#ffffff',
-        pointBorderWidth: 2,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: { 
-        y: { 
-          min: 0, 
-          max: 1, 
-          grid: { color: 'rgba(148, 163, 184, 0.1)' }, 
-          ticks: { 
-            color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim(), 
-            stepSize: 0.2 
-          } 
-        }, 
-        x: { 
-          grid: { display: false }, 
-          ticks: { 
-            color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim(),
-            maxRotation: 45,
-            minRotation: 45
-          } 
-        } 
-      },
-      plugins: { 
-        legend: { 
-          display: false 
-        },
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              return `Confidence: ${context.parsed.y.toFixed(2)}`;
-            }
-          }
-        }
-      },
-      // Set chart dimensions with explicit limits
-      responsive: true,
-      maintainAspectRatio: true,
-      aspectRatio: 2.5,
-      // Limit maximum canvas size for performance
-      animation: {
-        duration: 0 // Disable animations for better performance
-      }
-    }
-  });
+  mk('confidenceChart', 'line',
+    { labels: withConf.map(r => fmtDate(r.startedAt)), datasets: [{ label: 'Avg confidence', data: withConf.map(r => r.avgConfidence),
+      borderColor: '#3b82f6', backgroundColor: '#3b82f61a', fill: true, tension: 0.4, pointRadius: 4,
+      pointBackgroundColor: '#3b82f6', pointBorderColor: '#ffffff', pointBorderWidth: 2 }] },
+    { scales: { x: xTicks, y: { min: 0, max: 1, ticks: { stepSize: 0.2 } } },
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `Confidence: ${c.parsed.y.toFixed(2)}` } } } });
 
-  // Classification chart
-  const classificationTotals = { product_bug: 0, flaky: 0, test_issue: 0, environment: 0 };
-  history.forEach(r => { 
-    if (r.classifications) for (const k in classificationTotals) {
-      classificationTotals[k] += (r.classifications[k] || 0); 
-    }
-  });
-  
-  const ctxClassification = document.getElementById('classificationChart');
-  new Chart(ctxClassification, {
-    type: 'bar',
-    data: {
-      labels: ['Product Bug', 'Flaky', 'Test Issue', 'Environment'],
-      datasets: [{
-        data: [classificationTotals.product_bug, classificationTotals.flaky, classificationTotals.test_issue, classificationTotals.environment],
-        backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6', '#a855f7'],
-        borderRadius: 6
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: { 
-        y: { 
-          beginAtZero: true, 
-          ticks: { precision: 0 }, 
-          grid: { color: 'rgba(148, 163, 184, 0.1)' } 
-        }, 
-        x: { 
-          grid: { display: false }, 
-          ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim() } 
-        } 
-      },
-      plugins: { 
-        legend: { 
-          display: false 
-        },
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              const total = context.dataset.data.reduce((a, b) => a + b, 0);
-              const percentage = ((context.raw / total) * 100).toFixed(1);
-              return `${context.dataset.label}: ${context.raw} (${percentage}%)`;
-            }
-          }
-        }
-      },
-      // Set chart dimensions with explicit limits
-      responsive: true,
-      maintainAspectRatio: true,
-      aspectRatio: 1.8,
-      // Limit maximum canvas size for performance
-      animation: {
-        duration: 0 // Disable animations for better performance
-      }
-    }
-  });
+  const cl = { product_bug: 0, flaky: 0, test_issue: 0, environment: 0 };
+  history.forEach(r => { for (const k in cl) cl[k] += r.classifications?.[k] || 0; });
+  bars('classificationChart', ['Product Bug', 'Flaky', 'Test Issue', 'Environment'], Object.values(cl), ['#ef4444', '#f59e0b', '#3b82f6', '#a855f7']);
+  bars('actionsChart', ['Retry', 'Bug Created', 'Comment', 'Escalate', 'No Action'], dData, dColors);
 
-  // Actions chart
-  const ctxActions = document.getElementById('actionsChart');
-  new Chart(ctxActions, {
-    type: 'bar',
-    data: {
-      labels: ['Retry', 'Bug Created', 'Comment', 'Escalate', 'No Action'],
-      datasets: [{
-        data: [decisionTotals.retry, decisionTotals.create_bug, decisionTotals.comment, decisionTotals.escalate, decisionTotals.none],
-        backgroundColor: ['#f59e0b', '#ef4444', '#3b82f6', '#a855f7', '#64748b'],
-        borderRadius: 6
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: { 
-        y: { 
-          beginAtZero: true, 
-          ticks: { precision: 0 }, 
-          grid: { color: 'rgba(148, 163, 184, 0.1)' } 
-        }, 
-        x: { 
-          grid: { display: false }, 
-          ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim() } 
-        } 
-      },
-      plugins: { 
-        legend: { 
-          display: false 
-        },
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              const total = context.dataset.data.reduce((a, b) => a + b, 0);
-              const percentage = ((context.raw / total) * 100).toFixed(1);
-              return `${context.dataset.label}: ${context.raw} (${percentage}%)`;
-            }
-          }
-        }
-      },
-      // Set chart dimensions with explicit limits
-      responsive: true,
-      maintainAspectRatio: true,
-      aspectRatio: 1.8,
-      // Limit maximum canvas size for performance
-      animation: {
-        duration: 0 // Disable animations for better performance
-      }
-    }
-  });
+  document.getElementById('runsTable').innerHTML = [...history].reverse().slice(0, 10).map(r => {
+    const b = [];
+    if (r.bugsCreated) b.push(`<span class="badge badge-bug">${r.bugsCreated} bug${r.bugsCreated > 1 ? 's' : ''}</span>`);
+    if (r.classifications?.flaky) b.push(`<span class="badge badge-flaky">${r.classifications.flaky} flaky</span>`);
+    if (!r.bugsCreated && !r.classifications?.flaky && !(r.tests?.failed)) b.push('<span class="badge badge-ok">clean</span>');
+    return `<tr><td><a href="${esc(safeUrl(r.issueUrl))}" target="_blank" rel="noopener">${esc(r.ticket)}</a></td>` +
+      `<td>${fmtDate(r.startedAt)}</td><td>${r.tests?.passed || 0}/${r.tests?.total || 0}</td>` +
+      `<td>${r.coverage?.covered || 0}/${r.coverage?.total || 0}</td><td>${r.decisions?.total || 0} ${b.join(' ')}</td>` +
+      `<td>${r.bugsCreated || 0}</td><td>${r.avgConfidence != null ? r.avgConfidence.toFixed(2) : '—'}</td></tr>`;
+  }).join('') || '<tr><td colspan="7">No runs yet.</td></tr>';
 
-  // Render recent runs table
-  const runsTable = document.getElementById('runsTable');
-  const rows = [...history].reverse().slice(0, 10).map(r => {
-    const badges = [];
-    if (r.bugsCreated) badges.push('<span class="badge badge-bug">' + r.bugsCreated + ' bug' + (r.bugsCreated > 1 ? 's' : '') + '</span>');
-    if (r.classifications?.flaky) badges.push('<span class="badge badge-flaky">' + r.classifications.flaky + ' flaky</span>');
-    if (!r.bugsCreated && !r.classifications?.flaky && (r.tests?.failed || 0) === 0) badges.push('<span class="badge badge-ok">clean</span>');
-    
-    return '<tr>' +
-      '<td><a href="' + (r.issueUrl || '#') + '" target="_blank" rel="noopener">' + r.ticket + '</a></td>' +
-      '<td>' + fmtDate(r.startedAt) + '</td>' +
-      '<td>' + (r.tests?.passed || 0) + '/' + (r.tests?.total || 0) + '</td>' +
-      '<td>' + (r.coverage?.covered || 0) + '/' + (r.coverage?.total || 0) + '</td>' +
-      '<td>' + (r.decisions?.total || 0) + ' ' + badges.join(' ') + '</td>' +
-      '<td>' + (r.bugsCreated || 0) + '</td>' +
-      '<td>' + (r.avgConfidence != null ? r.avgConfidence.toFixed(2) : '—') + '</td>' +
-      '</tr>';
-  });
-  runsTable.innerHTML = rows.join('') || '<tr><td colspan="7">No runs yet.</td></tr>';
-
-  // Render risk table
-  const riskTable = document.getElementById('riskTable');
-  const riskData = {};
-  
-  history.forEach(r => {
-    if (r.risk) {
-      for (const [tag, m] of Object.entries(r.risk)) {
-        const existing = riskData[tag];
-        if (!existing) {
-          riskData[tag] = { ...m };
-        } else {
-          // Aggregate values
-          existing.criteria += m.criteria;
-          existing.covered += m.covered;
-          existing.failed += m.failed;
-          existing.passed += m.passed;
-          existing.flaky += m.flaky;
-          existing.bugs += m.bugs;
-          if (m.avgConfidence != null && !isNaN(m.avgConfidence)) {
-            // Simple average for confidence
-            if (existing.confCount) {
-              existing.confSum += m.avgConfidence;
-              existing.confCount += 1;
-            } else {
-              existing.confSum = m.avgConfidence;
-              existing.confCount = 1;
-            }
-          }
-        }
-      }
-    }
-  });
-
-  const riskRows = Object.keys(riskData).sort().map(tag => {
-    const r = riskData[tag];
-    const conf = r.confCount ? (r.confSum / r.confCount).toFixed(2) : '—';
-    return '<tr>' +
-      '<td><strong>' + tag + '</strong></td>' +
-      '<td>' + r.covered + '/' + r.criteria + '</td>' +
-      '<td>' + r.passed + '/' + r.failed + '/' + r.flaky + '</td>' +
-      '<td>' + r.bugs + '</td>' +
-      '<td>' + conf + '</td>' +
-      '</tr>';
-  });
-  
-  riskTable.innerHTML = riskRows.join('') || '<tr><td colspan="5">No tagged runs yet.</td></tr>';
+  const risk = {};
+  history.forEach(r => Object.entries(r.risk || {}).forEach(([tag, m]) => {
+    const x = risk[tag] || (risk[tag] = { criteria: 0, covered: 0, passed: 0, failed: 0, flaky: 0, bugs: 0, cs: 0, cn: 0 });
+    ['criteria', 'covered', 'passed', 'failed', 'flaky', 'bugs'].forEach(k => x[k] += m[k] || 0);
+    if (m.avgConfidence != null && !isNaN(m.avgConfidence)) { x.cs += m.avgConfidence; x.cn++; }
+  }));
+  document.getElementById('riskTable').innerHTML = Object.keys(risk).sort().map(tag => {
+    const r = risk[tag];
+    return `<tr><td><strong>${esc(tag)}</strong></td><td>${r.covered}/${r.criteria}</td><td>${r.passed}/${r.failed}/${r.flaky}</td>` +
+      `<td>${r.bugs}</td><td>${r.cn ? (r.cs / r.cn).toFixed(2) : '—'}</td></tr>`;
+  }).join('') || '<tr><td colspan="5">No tagged runs yet.</td></tr>';
 }
+
+// Demo data: ONLY used (with a visible banner) when no metrics-history.json can be loaded.
+const mockData = { history: [
+  { ticket: 'QA-101', startedAt: '2023-10-01T08:00:00Z', tests: { passed: 45, failed: 3, flaky: 2, skipped: 1, total: 51 }, coverage: { total: 60, covered: 55 },
+    decisions: { total: 8, byAction: { none: 4, retry: 1, create_bug: 2, comment: 1, escalate: 0 } }, classifications: { product_bug: 2, flaky: 1, test_issue: 0, environment: 0 },
+    avgConfidence: 0.85, bugsCreated: 2, risk: { '@auth': { criteria: 15, covered: 14, passed: 13, failed: 1, flaky: 0, bugs: 1, avgConfidence: 0.82 }, '@critical': { criteria: 20, covered: 18, passed: 16, failed: 2, flaky: 1, bugs: 1, avgConfidence: 0.87 } } },
+  { ticket: 'QA-102', startedAt: '2023-10-02T08:00:00Z', tests: { passed: 38, failed: 7, flaky: 3, skipped: 2, total: 50 }, coverage: { total: 60, covered: 52 },
+    decisions: { total: 10, byAction: { none: 3, retry: 2, create_bug: 4, comment: 1, escalate: 0 } }, classifications: { product_bug: 4, flaky: 2, test_issue: 0, environment: 0 },
+    avgConfidence: 0.89, bugsCreated: 4, risk: { '@auth': { criteria: 15, covered: 13, passed: 12, failed: 2, flaky: 1, bugs: 2, avgConfidence: 0.85 }, '@critical': { criteria: 20, covered: 17, passed: 14, failed: 3, flaky: 2, bugs: 2, avgConfidence: 0.9 } } },
+  { ticket: 'QA-103', startedAt: '2023-10-03T08:00:00Z', tests: { passed: 42, failed: 5, flaky: 1, skipped: 2, total: 50 }, coverage: { total: 60, covered: 58 },
+    decisions: { total: 9, byAction: { none: 2, retry: 1, create_bug: 3, comment: 2, escalate: 1 } }, classifications: { product_bug: 3, flaky: 1, test_issue: 0, environment: 0 },
+    avgConfidence: 0.87, bugsCreated: 3, risk: { '@auth': { criteria: 15, covered: 15, passed: 14, failed: 1, flaky: 0, bugs: 1, avgConfidence: 0.88 }, '@critical': { criteria: 20, covered: 19, passed: 17, failed: 2, flaky: 1, bugs: 2, avgConfidence: 0.86 } } }
+] };
 
 (async function init() {
   const history = await loadHistory();
-  if (!history || !history.length) { 
-    renderEmpty(); 
-  } else {
-    renderKpis(history);
-  }
+  if (history === null) render(mockData.history, true);
+  else if (!history.length) renderEmpty();
+  else render(history, false);
 })();
-
-  // Ensure chart containers have strict constraints and prevent memory leaks
-  document.querySelectorAll('.chart-container').forEach(container => {
-    const canvas = container.querySelector('canvas');
-    if (canvas) {
-      // Set explicit dimensions for the canvas in the context
-      canvas.style.width = '100%';
-      canvas.style.height = '100%';
-    }
-  });
 </script>
 </body>
 </html>
