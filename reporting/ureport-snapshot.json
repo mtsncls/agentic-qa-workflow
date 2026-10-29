@@ -1,29 +1,9 @@
 {
-  "fetchedAt": "2026-10-28T16:09:18.258Z",
+  "fetchedAt": "2026-10-29T09:13:06.465Z",
   "baseUrl": "https://ureport-standalone-6rd8.onrender.com",
   "product": "agentic-qa-workflow",
   "type": "E2E",
   "lanes": [
-    {
-      "product": "agentic-qa-workflow",
-      "type": "E2E",
-      "team": "QA",
-      "browser": "CHROME",
-      "extras": {
-        "app": "https://www.saucedemo.com",
-        "avgConfidence": "",
-        "bugsCreated": "0",
-        "coverage": "4/4",
-        "criteria": "4",
-        "generatedSpecs": "0",
-        "issueUrl": "mock://jira/browse/QA-101",
-        "projects": "chromium",
-        "risk": "auth,cart,checkout,critical,payment,pii,regression,revenue",
-        "runId": "pipeline-QA-101-1793099050887",
-        "ticket": "QA-101",
-        "verdicts": "product_bug=0;flaky=0;test_issue=0;environment=0"
-      }
-    },
     {
       "product": "agentic-qa-workflow",
       "type": "E2E",
@@ -80,6 +60,26 @@
         "projects": "chromium",
         "risk": "auth,cart,checkout,critical,payment,pii,regression,revenue",
         "runId": "pipeline-QA-101-1793097196003",
+        "ticket": "QA-101",
+        "verdicts": "product_bug=0;flaky=0;test_issue=0;environment=0"
+      }
+    },
+    {
+      "product": "agentic-qa-workflow",
+      "type": "E2E",
+      "team": "QA",
+      "browser": "CHROME",
+      "extras": {
+        "app": "https://www.saucedemo.com",
+        "avgConfidence": "",
+        "bugsCreated": "0",
+        "coverage": "4/4",
+        "criteria": "4",
+        "generatedSpecs": "0",
+        "issueUrl": "mock://jira/browse/QA-101",
+        "projects": "chromium",
+        "risk": "auth,cart,checkout,critical,payment,pii,regression,revenue",
+        "runId": "pipeline-QA-101-1793099050887",
         "ticket": "QA-101",
         "verdicts": "product_bug=0;flaky=0;test_issue=0;environment=0"
       }
