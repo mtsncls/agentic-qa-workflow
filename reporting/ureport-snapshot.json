@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-11-16T10:29:52.472Z",
+  "fetchedAt": "2026-11-16T12:51:11.947Z",
   "baseUrl": "https://ureport-standalone-6rd8.onrender.com",
   "product": "agentic-qa-workflow",
   "type": "E2E",
@@ -39,7 +39,7 @@
         "issueUrl": "mock://jira/browse/QA-101",
         "projects": "chromium",
         "risk": "auth,cart,checkout,critical,payment,pii,regression,revenue",
-        "runId": "pipeline-QA-101-1793110476531",
+        "runId": "pipeline-QA-101-1793098107420",
         "ticket": "QA-101",
         "verdicts": "product_bug=0;flaky=0;test_issue=0;environment=0"
       }
@@ -59,7 +59,7 @@
         "issueUrl": "mock://jira/browse/QA-101",
         "projects": "chromium",
         "risk": "auth,cart,checkout,critical,payment,pii,regression,revenue",
-        "runId": "pipeline-QA-101-1793098107420",
+        "runId": "pipeline-QA-101-1793110476531",
         "ticket": "QA-101",
         "verdicts": "product_bug=0;flaky=0;test_issue=0;environment=0"
       }
