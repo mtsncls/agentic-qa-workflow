@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-11-23T11:38:56.076Z",
+  "fetchedAt": "2026-11-24T13:11:28.551Z",
   "baseUrl": "https://ureport-standalone-6rd8.onrender.com",
   "product": "agentic-qa-workflow",
   "type": "E2E",
@@ -19,27 +19,7 @@
         "issueUrl": "mock://jira/browse/QA-101",
         "projects": "chromium",
         "risk": "auth,cart,checkout,critical,payment,pii,regression,revenue",
-        "runId": "pipeline-QA-101-1795086050313",
-        "ticket": "QA-101",
-        "verdicts": "product_bug=0;flaky=0;test_issue=0;environment=0"
-      }
-    },
-    {
-      "product": "agentic-qa-workflow",
-      "type": "E2E",
-      "team": "QA",
-      "browser": "CHROME",
-      "extras": {
-        "app": "https://www.saucedemo.com",
-        "avgConfidence": "",
-        "bugsCreated": "0",
-        "coverage": "4/4",
-        "criteria": "4",
-        "generatedSpecs": "0",
-        "issueUrl": "mock://jira/browse/QA-101",
-        "projects": "chromium",
-        "risk": "auth,cart,checkout,critical,payment,pii,regression,revenue",
-        "runId": "pipeline-QA-101-1793097197491",
+        "runId": "pipeline-QA-101-1793110476531",
         "ticket": "QA-101",
         "verdicts": "product_bug=0;flaky=0;test_issue=0;environment=0"
       }
@@ -99,27 +79,7 @@
         "issueUrl": "mock://jira/browse/QA-101",
         "projects": "chromium",
         "risk": "auth,cart,checkout,critical,payment,pii,regression,revenue",
-        "runId": "pipeline-QA-101-1793097196003",
-        "ticket": "QA-101",
-        "verdicts": "product_bug=0;flaky=0;test_issue=0;environment=0"
-      }
-    },
-    {
-      "product": "agentic-qa-workflow",
-      "type": "E2E",
-      "team": "QA",
-      "browser": "CHROME",
-      "extras": {
-        "app": "https://www.saucedemo.com",
-        "avgConfidence": "",
-        "bugsCreated": "0",
-        "coverage": "4/4",
-        "criteria": "4",
-        "generatedSpecs": "0",
-        "issueUrl": "mock://jira/browse/QA-101",
-        "projects": "chromium",
-        "risk": "auth,cart,checkout,critical,payment,pii,regression,revenue",
-        "runId": "pipeline-QA-101-1793110476531",
+        "runId": "pipeline-QA-101-1795086027465",
         "ticket": "QA-101",
         "verdicts": "product_bug=0;flaky=0;test_issue=0;environment=0"
       }
@@ -159,7 +119,47 @@
         "issueUrl": "mock://jira/browse/QA-101",
         "projects": "chromium",
         "risk": "auth,cart,checkout,critical,payment,pii,regression,revenue",
-        "runId": "pipeline-QA-101-1795086027465",
+        "runId": "pipeline-QA-101-1793097197491",
+        "ticket": "QA-101",
+        "verdicts": "product_bug=0;flaky=0;test_issue=0;environment=0"
+      }
+    },
+    {
+      "product": "agentic-qa-workflow",
+      "type": "E2E",
+      "team": "QA",
+      "browser": "CHROME",
+      "extras": {
+        "app": "https://www.saucedemo.com",
+        "avgConfidence": "",
+        "bugsCreated": "0",
+        "coverage": "4/4",
+        "criteria": "4",
+        "generatedSpecs": "0",
+        "issueUrl": "mock://jira/browse/QA-101",
+        "projects": "chromium",
+        "risk": "auth,cart,checkout,critical,payment,pii,regression,revenue",
+        "runId": "pipeline-QA-101-1793097196003",
+        "ticket": "QA-101",
+        "verdicts": "product_bug=0;flaky=0;test_issue=0;environment=0"
+      }
+    },
+    {
+      "product": "agentic-qa-workflow",
+      "type": "E2E",
+      "team": "QA",
+      "browser": "CHROME",
+      "extras": {
+        "app": "https://www.saucedemo.com",
+        "avgConfidence": "",
+        "bugsCreated": "0",
+        "coverage": "4/4",
+        "criteria": "4",
+        "generatedSpecs": "0",
+        "issueUrl": "mock://jira/browse/QA-101",
+        "projects": "chromium",
+        "risk": "auth,cart,checkout,critical,payment,pii,regression,revenue",
+        "runId": "pipeline-QA-101-1795086050313",
         "ticket": "QA-101",
         "verdicts": "product_bug=0;flaky=0;test_issue=0;environment=0"
       }
